@@ -1,0 +1,85 @@
+{
+  "name": "@joelbarron/react-web-dev-kit",
+  "version": "0.1.0",
+  "private": false,
+  "sideEffects": false,
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./auth": {
+      "types": "./dist/auth/index.d.ts",
+      "import": "./dist/auth/index.js",
+      "default": "./dist/auth/index.js"
+    },
+    "./config": {
+      "types": "./dist/config/index.d.ts",
+      "import": "./dist/config/index.js",
+      "default": "./dist/config/index.js"
+    },
+    "./forms": {
+      "types": "./dist/forms/index.d.ts",
+      "import": "./dist/forms/index.js",
+      "default": "./dist/forms/index.js"
+    },
+    "./grid": {
+      "types": "./dist/grid/index.d.ts",
+      "import": "./dist/grid/index.js",
+      "default": "./dist/grid/index.js"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.ts",
+      "import": "./dist/hooks/index.js",
+      "default": "./dist/hooks/index.js"
+    },
+    "./query": {
+      "types": "./dist/query/index.d.ts",
+      "import": "./dist/query/index.js",
+      "default": "./dist/query/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "default": "./dist/utils/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check:release": "npm run typecheck && npm run clean && npm run build",
+    "changeset": "changeset",
+    "release:version": "changeset version",
+    "release:publish": "changeset publish"
+  },
+  "peerDependencies": {
+    "react": ">=19",
+    "react-dom": ">=19",
+    "@tanstack/react-query": ">=5",
+    "axios": ">=1.4",
+    "lodash": ">=4.17",
+    "react-router": ">=7",
+    "react-hook-form": ">=7",
+    "@hookform/resolvers": ">=5",
+    "zod": ">=4",
+    "@mui/material": ">=5",
+    "@mui/x-date-pickers": ">=6",
+    "@devexpress/dx-react-grid": ">=4",
+    "@devexpress/dx-react-grid-material-ui": ">=4"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "@hookform/resolvers": "^5.2.2",
+    "@types/lodash": "^4.17.20",
+    "lodash": "^4.17.21",
+    "react-router": "^7.9.5",
+    "typescript": "^5.9.3",
+    "zod": "^4.1.5"
+  }
+}

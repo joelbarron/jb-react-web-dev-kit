@@ -113,12 +113,12 @@ const queryClient = createReactWebQueryClient({
 ### Auth Forms Base
 
 Tambien incluye formularios base para auth:
-- `JBLoginForm`
-- `JBForgotPasswordForm`
-- `JBResetPasswordForm`
+- `AuthPasswordSignInForm`
+- `AuthForgotPasswordForm`
+- `AuthResetPasswordForm`
 
 ```tsx
-import { JBLoginForm } from '@joelbarron/react-web-dev-kit/auth';
+import { AuthPasswordSignInForm } from '@joelbarron/react-web-dev-kit/auth';
 ```
 
 ## Config Global (overrideable)
