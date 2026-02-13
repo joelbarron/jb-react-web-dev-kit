@@ -1,6 +1,6 @@
 {
   "name": "@joelbarron/react-web-dev-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "sideEffects": false,
   "main": "dist/index.js",
@@ -48,7 +48,10 @@
       "default": "./dist/utils/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist",
