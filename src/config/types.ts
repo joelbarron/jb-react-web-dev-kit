@@ -17,6 +17,12 @@ export type JBAuthSocialProviderConfig = {
   clientId?: string;
   redirectUri?: string;
   scope?: string;
+  scopes?: string[];
+  usePopup?: boolean;
+  responseMode?: 'web_message' | 'form_post' | 'query' | 'fragment';
+  responseType?: 'code' | 'id_token' | 'code id_token';
+  state?: string;
+  nonce?: string;
 };
 
 export type JBAuthSocialConfig = Record<JBSocialProviderName, JBAuthSocialProviderConfig>;

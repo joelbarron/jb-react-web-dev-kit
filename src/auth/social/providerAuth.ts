@@ -4,6 +4,12 @@ type SocialProviderClientConfig = {
   clientId: string;
   redirectUri?: string;
   scope?: string;
+  scopes?: string[];
+  usePopup?: boolean;
+  responseMode?: 'web_message' | 'form_post' | 'query' | 'fragment';
+  responseType?: 'code' | 'id_token' | 'code id_token';
+  state?: string;
+  nonce?: string;
 };
 
 type GoogleCodeResponse = {
@@ -58,6 +64,10 @@ declare global {
           scope: string;
           redirectURI: string;
           usePopup: boolean;
+          responseMode?: 'web_message' | 'form_post' | 'query' | 'fragment';
+          responseType?: 'code' | 'id_token' | 'code id_token';
+          state?: string;
+          nonce?: string;
         }) => void;
         signIn: () => Promise<AppleSignInResponse>;
       };
@@ -183,11 +193,21 @@ const authenticateWithApple = async (
 ): Promise<Pick<LoginSocialPayload, 'provider' | 'authorizationCode' | 'idToken' | 'redirectUri' | 'clientId'>> => {
   await ensureAppleSdk();
 
+  const usePopup = config.usePopup ?? true;
+  const resolvedScope = config.scope ?? config.scopes?.join(' ') ?? 'name email';
+  const resolvedRedirectUri = config.redirectUri || window.location.origin;
+  const resolvedResponseMode = config.responseMode ?? (usePopup ? 'web_message' : 'form_post');
+  const resolvedResponseType = config.responseType ?? (usePopup ? 'code id_token' : 'code');
+
   window.AppleID!.auth.init({
     clientId: config.clientId,
-    scope: config.scope ?? 'name email',
-    redirectURI: config.redirectUri || window.location.origin,
-    usePopup: true
+    scope: resolvedScope,
+    redirectURI: resolvedRedirectUri,
+    usePopup,
+    responseMode: resolvedResponseMode,
+    responseType: resolvedResponseType,
+    state: config.state,
+    nonce: config.nonce
   });
 
   const response = await window.AppleID!.auth.signIn();
@@ -202,7 +222,7 @@ const authenticateWithApple = async (
     provider: 'apple',
     authorizationCode,
     idToken,
-    redirectUri: config.redirectUri,
+    redirectUri: resolvedRedirectUri,
     clientId: config.clientId
   };
 };

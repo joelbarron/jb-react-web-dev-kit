@@ -67,6 +67,12 @@ type EnabledSocialProvider = {
   clientId: string;
   redirectUri?: string;
   scope?: string;
+  scopes?: string[];
+  usePopup?: boolean;
+  responseMode?: "web_message" | "form_post" | "query" | "fragment";
+  responseType?: "code" | "id_token" | "code id_token";
+  state?: string;
+  nonce?: string;
 };
 
 const SOCIAL_PROVIDER_ORDER: SocialProvider[] = ["google", "facebook", "apple"];
@@ -87,7 +93,13 @@ function getEnabledSocialProviders(socialConfig?: JBAuthSocialConfig): EnabledSo
         provider,
         clientId: providerConfig.clientId.trim(),
         redirectUri: providerConfig.redirectUri?.trim() || undefined,
-        scope: providerConfig.scope?.trim() || undefined
+        scope: providerConfig.scope?.trim() || undefined,
+        scopes: providerConfig.scopes,
+        usePopup: providerConfig.usePopup,
+        responseMode: providerConfig.responseMode,
+        responseType: providerConfig.responseType,
+        state: providerConfig.state,
+        nonce: providerConfig.nonce
       }
     ];
   });

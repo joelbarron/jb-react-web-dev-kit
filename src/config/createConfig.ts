@@ -110,19 +110,45 @@ export const createJBWebConfigFromEnv = (
           ...(typeof googleEnabled === 'boolean' ? { enabled: googleEnabled } : {}),
           clientId: runtimeEnv.VITE_AUTH_SOCIAL_GOOGLE_CLIENT_ID,
           redirectUri: runtimeEnv.VITE_AUTH_SOCIAL_GOOGLE_REDIRECT_URI,
-          scope: runtimeEnv.VITE_AUTH_SOCIAL_GOOGLE_SCOPE
+          scope: runtimeEnv.VITE_AUTH_SOCIAL_GOOGLE_SCOPE,
+          scopes: runtimeEnv.VITE_AUTH_SOCIAL_GOOGLE_SCOPES
+            ?.split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
         },
         facebook: {
           ...(typeof facebookEnabled === 'boolean' ? { enabled: facebookEnabled } : {}),
           clientId: runtimeEnv.VITE_AUTH_SOCIAL_FACEBOOK_CLIENT_ID,
           redirectUri: runtimeEnv.VITE_AUTH_SOCIAL_FACEBOOK_REDIRECT_URI,
-          scope: runtimeEnv.VITE_AUTH_SOCIAL_FACEBOOK_SCOPE
+          scope: runtimeEnv.VITE_AUTH_SOCIAL_FACEBOOK_SCOPE,
+          scopes: runtimeEnv.VITE_AUTH_SOCIAL_FACEBOOK_SCOPES
+            ?.split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
         },
         apple: {
           ...(typeof appleEnabled === 'boolean' ? { enabled: appleEnabled } : {}),
           clientId: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_CLIENT_ID,
           redirectUri: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_REDIRECT_URI,
-          scope: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_SCOPE
+          scope: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_SCOPE,
+          scopes: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_SCOPES
+            ?.split(',')
+            .map((item) => item.trim())
+            .filter(Boolean),
+          usePopup: parseBooleanEnv(runtimeEnv.VITE_AUTH_SOCIAL_APPLE_USE_POPUP),
+          responseMode: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_RESPONSE_MODE as
+            | 'web_message'
+            | 'form_post'
+            | 'query'
+            | 'fragment'
+            | undefined,
+          responseType: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_RESPONSE_TYPE as
+            | 'code'
+            | 'id_token'
+            | 'code id_token'
+            | undefined,
+          state: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_STATE,
+          nonce: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_NONCE
         }
       }
     }
