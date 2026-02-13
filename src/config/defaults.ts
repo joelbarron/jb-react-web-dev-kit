@@ -22,6 +22,7 @@ export const defaultJBAppConfig: JBAppConfig = {
   },
   auth: {
     apiBasePath: '/authentication',
+    showDebugSocial: false,
     profileRoles: [],
     defaultProfileRole: undefined,
     social: {

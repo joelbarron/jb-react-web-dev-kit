@@ -10,6 +10,7 @@ type SocialProviderClientConfig = {
   responseType?: 'code' | 'id_token' | 'code id_token';
   state?: string;
   nonce?: string;
+  debug?: boolean;
 };
 
 type GoogleCodeResponse = {
@@ -24,7 +25,12 @@ type GoogleCredentialResponse = {
 type AppleSignInResponse = {
   authorization?: {
     code?: string;
+    grant_code?: string;
+    grantCode?: string;
+    authorizationCode?: string;
     id_token?: string;
+    idToken?: string;
+    scope?: string | string[];
   };
 };
 
@@ -147,9 +153,23 @@ const ensureFacebookSdk = async (clientId: string) => {
   });
 };
 
+const logSocialDebug = (enabled: boolean | undefined, message: string, payload?: unknown) => {
+  if (!enabled) {
+    return;
+  }
+  if (typeof payload === 'undefined') {
+    console.info(`[jb-auth][social] ${message}`);
+    return;
+  }
+  console.info(`[jb-auth][social] ${message}`, payload);
+};
+
 const authenticateWithGoogle = async (
   config: SocialProviderClientConfig
 ): Promise<Pick<LoginSocialPayload, 'provider' | 'idToken' | 'clientId'>> => {
+  logSocialDebug(config.debug, 'google provider auth start', {
+    clientId: config.clientId
+  });
   await ensureGoogleSdk();
 
   const response = await new Promise<GoogleCredentialResponse>((resolve, reject) => {
@@ -191,6 +211,13 @@ const authenticateWithGoogle = async (
 const authenticateWithApple = async (
   config: SocialProviderClientConfig
 ): Promise<Pick<LoginSocialPayload, 'provider' | 'authorizationCode' | 'idToken' | 'redirectUri' | 'clientId'>> => {
+  logSocialDebug(config.debug, 'apple provider auth start', {
+    clientId: config.clientId,
+    redirectUri: config.redirectUri,
+    usePopup: config.usePopup,
+    responseMode: config.responseMode,
+    responseType: config.responseType
+  });
   await ensureAppleSdk();
 
   const usePopup = config.usePopup ?? true;
@@ -211,8 +238,12 @@ const authenticateWithApple = async (
   });
 
   const response = await window.AppleID!.auth.signIn();
-  const authorizationCode = response.authorization?.code;
-  const idToken = response.authorization?.id_token;
+  const authorizationCode =
+    response.authorization?.code ??
+    response.authorization?.grant_code ??
+    response.authorization?.grantCode ??
+    response.authorization?.authorizationCode;
+  const idToken = response.authorization?.id_token ?? response.authorization?.idToken;
 
   if (!authorizationCode && !idToken) {
     throw new Error('Apple authentication failed.');
@@ -230,6 +261,9 @@ const authenticateWithApple = async (
 const authenticateWithFacebook = async (
   config: SocialProviderClientConfig
 ): Promise<Pick<LoginSocialPayload, 'provider' | 'accessToken' | 'clientId'>> => {
+  logSocialDebug(config.debug, 'facebook provider auth start', {
+    clientId: config.clientId
+  });
   await ensureFacebookSdk(config.clientId);
 
   const response = await new Promise<FacebookLoginResponse>((resolve) => {

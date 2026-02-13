@@ -105,6 +105,7 @@ export const createJBWebConfigFromEnv = (
     },
     auth: {
       apiBasePath: runtimeEnv.VITE_AUTH_BASE_PATH,
+      showDebugSocial: parseBooleanEnv(runtimeEnv.VITE_AUTH_SHOW_DEBUG_SOCIAL),
       social: {
         google: {
           ...(typeof googleEnabled === 'boolean' ? { enabled: googleEnabled } : {}),
@@ -173,4 +174,8 @@ export const getAuthDefaultProfileRole = (config: JBAppConfig): string | undefin
 
 export const getAuthSocialConfig = (config: JBAppConfig): JBAuthSocialConfig => {
   return config.auth?.social ?? defaultJBAppConfig.auth.social;
+};
+
+export const getAuthShowDebugSocial = (config: JBAppConfig): boolean => {
+  return config.auth?.showDebugSocial ?? defaultJBAppConfig.auth.showDebugSocial;
 };

@@ -44,6 +44,7 @@ export type JBAppConfig = {
   };
   auth: {
     apiBasePath: string;
+    showDebugSocial: boolean;
     profileRoles: JBAuthProfileRoleOption[];
     defaultProfileRole?: string;
     social: JBAuthSocialConfig;

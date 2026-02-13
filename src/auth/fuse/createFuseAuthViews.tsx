@@ -73,11 +73,15 @@ type EnabledSocialProvider = {
   responseType?: "code" | "id_token" | "code id_token";
   state?: string;
   nonce?: string;
+  debug?: boolean;
 };
 
 const SOCIAL_PROVIDER_ORDER: SocialProvider[] = ["google", "facebook", "apple"];
 
-function getEnabledSocialProviders(socialConfig?: JBAuthSocialConfig): EnabledSocialProvider[] {
+function getEnabledSocialProviders(
+  socialConfig?: JBAuthSocialConfig,
+  showDebugSocial?: boolean
+): EnabledSocialProvider[] {
   if (!socialConfig) {
     return [];
   }
@@ -99,7 +103,8 @@ function getEnabledSocialProviders(socialConfig?: JBAuthSocialConfig): EnabledSo
         responseMode: providerConfig.responseMode,
         responseType: providerConfig.responseType,
         state: providerConfig.state,
-        nonce: providerConfig.nonce
+        nonce: providerConfig.nonce,
+        debug: showDebugSocial
       }
     ];
   });
@@ -463,6 +468,7 @@ type CreateFuseAuthViewsOptions = {
   signUpRoleOptions?: JBAuthProfileRoleOption[];
   defaultSignUpRole?: string;
   socialConfig?: JBAuthSocialConfig;
+  showDebugSocial?: boolean;
   onSignUpSuccess?: (values: {
     email: string;
     detail?: string;
@@ -477,6 +483,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
     signUpRoleOptions,
     defaultSignUpRole,
     socialConfig,
+    showDebugSocial = false,
     onSignUpSuccess,
   } = options;
 
@@ -496,8 +503,8 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
       defaultSignUpRole
     );
     const enabledSocialProviders = useMemo(
-      () => getEnabledSocialProviders(socialConfig),
-      [socialConfig]
+      () => getEnabledSocialProviders(socialConfig, showDebugSocial),
+      [socialConfig, showDebugSocial]
     );
 
     const onSocialClick = useCallback(
@@ -510,12 +517,25 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
         try {
           setSocialError(null);
           setSocialLoadingProvider(provider);
+          if (showDebugSocial) {
+            console.info("[jb-auth][social] start provider auth", { provider, providerConfig });
+          }
           const tokenPayload = await authenticateWithSocialProvider(provider, providerConfig);
+          if (showDebugSocial) {
+            console.info("[jb-auth][social] provider token payload ready", { provider, tokenPayload });
+          }
           const selectedRole = hasRoleOptions ? await requestRoleSelection() : undefined;
           if (hasRoleOptions && !selectedRole) {
             return;
           }
 
+          if (showDebugSocial) {
+            console.info("[jb-auth][social] sending loginSocial request", {
+              provider,
+              role: selectedRole,
+              client: "web"
+            });
+          }
           await signInSocial({
             ...tokenPayload,
             provider,
@@ -524,13 +544,16 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
             termsAndConditionsAccepted: true,
           });
         } catch (error) {
+          if (showDebugSocial) {
+            console.error("[jb-auth][social] flow failed", { provider, error });
+          }
           const parsed = parseAuthError(error);
           setSocialError(parsed.rootMessage || "No se pudo continuar con el proveedor social.");
         } finally {
           setSocialLoadingProvider(null);
         }
       },
-      [enabledSocialProviders, hasRoleOptions, requestRoleSelection, signInSocial]
+      [enabledSocialProviders, hasRoleOptions, requestRoleSelection, showDebugSocial, signInSocial]
     );
 
     return (
@@ -588,8 +611,8 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
       defaultSignUpRole
     );
     const enabledSocialProviders = useMemo(
-      () => getEnabledSocialProviders(socialConfig),
-      [socialConfig]
+      () => getEnabledSocialProviders(socialConfig, showDebugSocial),
+      [socialConfig, showDebugSocial]
     );
 
     const onSocialClick = useCallback(
@@ -602,12 +625,25 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
         try {
           setSocialError(null);
           setSocialLoadingProvider(provider);
+          if (showDebugSocial) {
+            console.info("[jb-auth][social] start provider auth", { provider, providerConfig });
+          }
           const tokenPayload = await authenticateWithSocialProvider(provider, providerConfig);
+          if (showDebugSocial) {
+            console.info("[jb-auth][social] provider token payload ready", { provider, tokenPayload });
+          }
           const selectedRole = hasRoleOptions ? await requestRoleSelection() : undefined;
           if (hasRoleOptions && !selectedRole) {
             return;
           }
 
+          if (showDebugSocial) {
+            console.info("[jb-auth][social] sending loginSocial request", {
+              provider,
+              role: selectedRole,
+              client: "web"
+            });
+          }
           await signInSocial({
             ...tokenPayload,
             provider,
@@ -616,13 +652,16 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
             termsAndConditionsAccepted: true,
           });
         } catch (error) {
+          if (showDebugSocial) {
+            console.error("[jb-auth][social] flow failed", { provider, error });
+          }
           const parsed = parseAuthError(error);
           setSocialError(parsed.rootMessage || "No se pudo continuar con el proveedor social.");
         } finally {
           setSocialLoadingProvider(null);
         }
       },
-      [enabledSocialProviders, hasRoleOptions, requestRoleSelection, signInSocial]
+      [enabledSocialProviders, hasRoleOptions, requestRoleSelection, showDebugSocial, signInSocial]
     );
 
     return (
