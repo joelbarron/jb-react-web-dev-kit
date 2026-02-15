@@ -22,6 +22,15 @@ type GoogleCredentialResponse = {
   credential?: string;
 };
 
+type GooglePromptMomentNotification = {
+  isNotDisplayed?: () => boolean;
+  isSkippedMoment?: () => boolean;
+  isDismissedMoment?: () => boolean;
+  getNotDisplayedReason?: () => string;
+  getSkippedReason?: () => string;
+  getDismissedReason?: () => string;
+};
+
 type AppleSignInResponse = {
   authorization?: {
     code?: string;
@@ -49,7 +58,7 @@ declare global {
             client_id: string;
             callback: (response: GoogleCredentialResponse) => void;
           }) => void;
-          prompt: () => void;
+          prompt: (listener?: (notification: GooglePromptMomentNotification) => void) => void;
           cancel: () => void;
         };
         oauth2?: {
@@ -194,7 +203,29 @@ const authenticateWithGoogle = async (
       }
     });
 
-    window.google!.accounts!.id!.prompt();
+    window.google!.accounts!.id!.cancel();
+    window.google!.accounts!.id!.prompt((notification) => {
+      if (settled) {
+        return;
+      }
+
+      const isNotDisplayed = notification?.isNotDisplayed?.() ?? false;
+      const isSkipped = notification?.isSkippedMoment?.() ?? false;
+      const isDismissed = notification?.isDismissedMoment?.() ?? false;
+
+      if (!isNotDisplayed && !isSkipped && !isDismissed) {
+        return;
+      }
+
+      settled = true;
+      window.clearTimeout(timeoutId);
+      const reason =
+        notification?.getNotDisplayedReason?.() ||
+        notification?.getSkippedReason?.() ||
+        notification?.getDismissedReason?.() ||
+        'Google sign-in cancelled';
+      reject(new Error(`Google authentication was not completed: ${reason}`));
+    });
   });
 
   if (!response.credential) {

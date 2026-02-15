@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -368,8 +369,9 @@ export function AuthOtpSignInForm(props: AuthOtpSignInFormProps) {
         <AuthSecondaryButton
           sx={{ mt: 2 }}
           type="button"
+          startIcon={<ArrowBackOutlinedIcon fontSize="small" />}
           onClick={onBackToPassword}>
-          Usar contraseña
+          Regresar a iniciar sesión
         </AuthSecondaryButton>
       </form>
 

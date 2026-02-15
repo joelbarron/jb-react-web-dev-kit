@@ -1,5 +1,8 @@
 # Auth Roadmap
 
+Referencia de QA:
+- Matriz de pruebas auth: [`roadmap/auth-test-matrix.md`](./auth-test-matrix.md)
+
 ## ✅ Completado
 - ✅ Arquitectura auth desacoplada para Fuse (`createAuthRoutes`, `createFuseAuthViews`, adapter/provider).
 - ✅ Login JWT con payload `login` + `password`.
@@ -39,7 +42,7 @@
 - 🔜 Integración UI para gestión de cuenta (`account/update`, `account/delete`).
 - 🔜 Integración UI para `profile picture`.
 - 🔜 Layouts auth configurables (2-3 variantes por proyecto).
-- 🔜 Tests de flujos críticos (login/signup/verify/reset/refresh).
+- 🔜 Implementar automatización de la matriz de pruebas auth (`roadmap/auth-test-matrix.md`).
 - 🔜 Publicación versionada estable + guía de migración.
 
 ## 🚧 Riesgos / deuda técnica

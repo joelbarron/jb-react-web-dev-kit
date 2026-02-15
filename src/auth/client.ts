@@ -16,6 +16,7 @@ import {
   JbDrfWebAuthResponse,
   LinkSocialPayload,
   LoginBasicPayload,
+  LoginSocialPrecheckResponse,
   LoginSocialPayload,
   PasswordChangePayload,
   PasswordResetConfirmPayload,
@@ -47,6 +48,7 @@ export const createAuthEndpoints = (basePath?: string): JbDrfAuthEndpoints => {
   return {
     loginBasic: `${root}/login/basic/`,
     loginSocial: `${root}/login/social/`,
+    loginSocialPrecheck: `${root}/login/social/precheck/`,
     loginSocialLink: `${root}/login/social/link/`,
     loginSocialUnlink: `${root}/login/social/unlink/`,
     loginOtpVerify: `${root}/otp/verify/`,
@@ -82,6 +84,7 @@ export type AuthClient = {
   createAuthenticatedAxiosWithRefresh: (options?: CreateAuthenticatedAxiosOptions) => AxiosInstance;
   loginBasic: (payload: LoginBasicPayload) => Promise<JbDrfWebAuthResponse>;
   loginSocial: (payload: LoginSocialPayload) => Promise<JbDrfWebAuthResponse>;
+  loginSocialPrecheck: (payload: LoginSocialPayload) => Promise<LoginSocialPrecheckResponse>;
   linkSocial: (payload: LinkSocialPayload) => Promise<Record<string, unknown>>;
   unlinkSocial: (payload: UnlinkSocialPayload) => Promise<Record<string, unknown>>;
   requestOtp: (payload: RequestOtpPayload) => Promise<Record<string, unknown>>;
@@ -309,6 +312,14 @@ export const createAuthClient = (config: JbDrfAuthConfig): AuthClient => {
     return response.data;
   };
 
+  const loginSocialPrecheck = async (payload: LoginSocialPayload): Promise<LoginSocialPrecheckResponse> => {
+    const response = await createPublicAxios().post<LoginSocialPrecheckResponse>(
+      withBaseUrl(endpoints.loginSocialPrecheck),
+      withClientPayload(payload, defaultClient)
+    );
+    return response.data;
+  };
+
   const linkSocial = async (payload: LinkSocialPayload): Promise<Record<string, unknown>> => {
     const response = await createAuthenticatedAxiosWithRefresh().post<Record<string, unknown>>(
       withBaseUrl(endpoints.loginSocialLink),
@@ -478,10 +489,18 @@ export const createAuthClient = (config: JbDrfAuthConfig): AuthClient => {
   };
 
   const refreshToken = async (payload?: RefreshPayload): Promise<TokenPair> => {
+    const refreshTokenValue = payload?.refreshToken ?? getStoredRefreshToken();
+    if (!refreshTokenValue) {
+      return {
+        accessToken: '',
+        refreshToken: ''
+      };
+    }
+
     const response = await createPublicAxios().post<RefreshResponsePayload>(
       withBaseUrl(endpoints.refresh),
       {
-      refresh: payload?.refreshToken
+      refresh: refreshTokenValue
       }
     );
     const nextTokens = getRefreshTokenFromResponse(response);
@@ -558,6 +577,7 @@ export const createAuthClient = (config: JbDrfAuthConfig): AuthClient => {
     createAuthenticatedAxiosWithRefresh,
     loginBasic,
     loginSocial,
+    loginSocialPrecheck,
     linkSocial,
     unlinkSocial,
     requestOtp,

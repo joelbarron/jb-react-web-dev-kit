@@ -13,6 +13,7 @@ import { AuthClient } from '../client';
 import {
   AccountConfirmationPayload,
   AccountConfirmationResendPayload,
+  LoginSocialPrecheckResponse,
   LoginSocialPayload,
   PasswordChangePayload,
   PasswordResetConfirmPayload,
@@ -33,6 +34,7 @@ type FuseAuthState<TUser = JsonRecord> = {
 export type FuseJwtAuthContextType<TUser = JsonRecord> = FuseAuthState<TUser> & {
   signIn: (credentials: { login: string; password: string; username?: string }) => Promise<JsonRecord>;
   signInSocial: (payload: LoginSocialPayload) => Promise<JsonRecord>;
+  signInSocialPrecheck: (payload: LoginSocialPayload) => Promise<LoginSocialPrecheckResponse>;
   requestOtp: (payload: RequestOtpPayload) => Promise<Record<string, unknown>>;
   signInOtp: (payload: VerifyOtpPayload) => Promise<JsonRecord>;
   signUp: (payload: RegisterPayload) => Promise<JsonRecord>;
@@ -255,6 +257,15 @@ export const createFuseJwtAuthProvider = (authClient: AuthClient) => {
       };
     }, []);
 
+    const signInSocialPrecheck: FuseJwtAuthContextType['signInSocialPrecheck'] = useCallback(
+      async (payload) =>
+        authClient.loginSocialPrecheck({
+          ...payload,
+          client: payload.client ?? 'web'
+        }),
+      []
+    );
+
     const signInOtp: FuseJwtAuthContextType['signInOtp'] = useCallback(async (payload) => {
       const session = normalizeSession(
         await authClient.verifyOtp({
@@ -340,6 +351,7 @@ export const createFuseJwtAuthProvider = (authClient: AuthClient) => {
         ...authState,
         signIn,
         signInSocial,
+        signInSocialPrecheck,
         requestOtp,
         signInOtp,
         signUp,
@@ -357,6 +369,7 @@ export const createFuseJwtAuthProvider = (authClient: AuthClient) => {
         authState,
         signIn,
         signInSocial,
+        signInSocialPrecheck,
         requestOtp,
         signInOtp,
         signUp,

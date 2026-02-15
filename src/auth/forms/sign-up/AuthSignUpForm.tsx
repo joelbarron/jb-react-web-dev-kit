@@ -1,8 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import PersonAddAlt1OutlinedIcon from '@mui/icons-material/PersonAddAlt1Outlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
 import _ from 'lodash';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -10,6 +15,7 @@ import { JBCheckboxField, JBSelectField, JBTextField, SelectOption } from '../..
 import { DEFAULT_GENDER, GENDERS, GENDER_SELECT_OPTIONS } from '../../constants';
 import { RegisterPayload } from '../../types';
 import { AuthPrimaryButton } from '../../ui';
+import { getDjangoLikePasswordError, isPasswordTooSimilar } from '../password/passwordValidation';
 import { parseAuthError } from '../errorParser';
 
 const signUpSchema = z
@@ -21,16 +27,31 @@ const signUpSchema = z
     birthday: z.string().optional(),
     gender: z.enum(GENDERS).optional(),
     role: z.string().optional(),
-    password: z
-      .string()
-      .nonempty('Debes ingresar la contraseña.')
-      .min(8, 'La contraseña es muy corta - mínimo 8 caracteres.'),
+    password: z.string().nonempty('Debes ingresar la contraseña.'),
     passwordConfirm: z.string().nonempty('La confirmación de contraseña es obligatoria'),
     acceptTermsConditions: z.boolean().refine((val) => val === true, 'Debes aceptar los términos y condiciones.')
   })
   .refine((data) => data.password === data.passwordConfirm, {
     message: 'Las contraseñas deben coincidir',
     path: ['passwordConfirm']
+  })
+  .superRefine((data, ctx) => {
+    const passwordError = getDjangoLikePasswordError(data.password);
+    if (passwordError) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: passwordError,
+        path: ['password']
+      });
+    }
+
+    if (isPasswordTooSimilar(data.password, [data.email, data.firstName, data.lastName1, data.lastName2])) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'La contraseña es demasiado similar a tus datos personales.',
+        path: ['password']
+      });
+    }
   });
 
 export type AuthSignUpFormValues = z.infer<typeof signUpSchema>;
@@ -38,6 +59,7 @@ export type AuthSignUpFormValues = z.infer<typeof signUpSchema>;
 export type AuthSignUpFormProps = {
   defaultValues?: Partial<AuthSignUpFormValues>;
   loading?: boolean;
+  disabled?: boolean;
   submitLabel?: string;
   fieldsScrollable?: boolean;
   formMaxHeight?: string | number;
@@ -63,6 +85,7 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
   const {
     defaultValues: valuesFromProps,
     loading = false,
+    disabled = false,
     submitLabel = 'Crear cuenta',
     fieldsScrollable = false,
     formMaxHeight = 'min(72dvh, 620px)',
@@ -90,6 +113,8 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
   const isLoading = loading || isSubmitting;
   const passwordValue = useWatch({ control, name: 'password' });
   const passwordConfirmValue = useWatch({ control, name: 'passwordConfirm' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
   useEffect(() => {
     if (!passwordConfirmValue) {
@@ -212,9 +237,10 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           autoFocus
           type="text"
           variant="outlined"
-          required
-          fullWidth
-        />
+        required
+        fullWidth
+        disabled={disabled}
+      />
 
         <JBTextField
           control={control}
@@ -223,9 +249,10 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           label="Primer apellido"
           type="text"
           variant="outlined"
-          required
-          fullWidth
-        />
+        required
+        fullWidth
+        disabled={disabled}
+      />
 
         <JBTextField
           control={control}
@@ -235,6 +262,7 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           type="text"
           variant="outlined"
           fullWidth
+          disabled={disabled}
         />
 
         <JBTextField
@@ -246,6 +274,7 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           variant="outlined"
           required
           fullWidth
+          disabled={disabled}
         />
 
         <JBTextField
@@ -257,6 +286,7 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           InputLabelProps={{ shrink: true }}
           variant="outlined"
           fullWidth
+          disabled={disabled}
         />
 
         <JBSelectField
@@ -267,6 +297,7 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           variant="outlined"
           fullWidth
           options={GENDER_SELECT_OPTIONS}
+          disabled={disabled}
         />
 
         {signupRoleOptions.length > 0 ? (
@@ -279,6 +310,7 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
             fullWidth
             options={signupRoleOptions}
             required
+            disabled={disabled}
           />
         ) : null}
 
@@ -287,10 +319,23 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           name="password"
           sx={{ mb: 3 }}
           label="Contraseña"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  edge="end"
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  onClick={() => setShowPassword((prev) => !prev)}>
+                  {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
           variant="outlined"
           required
           fullWidth
+          disabled={disabled}
         />
 
         <JBTextField
@@ -298,10 +343,23 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           name="passwordConfirm"
           sx={{ mb: 3 }}
           label="Confirmar contraseña"
-          type="password"
+          type={showPasswordConfirm ? 'text' : 'password'}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  edge="end"
+                  aria-label={showPasswordConfirm ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'}
+                  onClick={() => setShowPasswordConfirm((prev) => !prev)}>
+                  {showPasswordConfirm ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
           variant="outlined"
           required
           fullWidth
+          disabled={disabled}
         />
 
         <JBCheckboxField
@@ -309,6 +367,7 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           name="acceptTermsConditions"
           size="small"
           label="Acepto términos y políticas de privacidad"
+          disabled={disabled}
         />
       </Box>
 
@@ -323,9 +382,10 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
       <AuthPrimaryButton
         sx={{ mt: 3 }}
         aria-label={submitLabel}
-        disabled={isLoading || _.isEmpty(dirtyFields) || !isValid}
+        disabled={disabled || isLoading || _.isEmpty(dirtyFields) || !isValid}
         loading={isLoading}
         loadingLabel="Creando cuenta..."
+        startIcon={<PersonAddAlt1OutlinedIcon fontSize="small" />}
         type="submit"
         size="large">
         {submitLabel}

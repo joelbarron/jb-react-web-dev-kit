@@ -8,13 +8,13 @@ type AuthPrimaryButtonProps = Omit<ButtonProps, 'variant' | 'color'> & {
 };
 
 export function AuthPrimaryButton(props: AuthPrimaryButtonProps) {
-  const { loading = false, loadingLabel, children, disabled, sx, ...rest } = props;
+  const { loading = false, loadingLabel, children, disabled, sx, startIcon, ...rest } = props;
 
   return (
     <Button
       {...rest}
       variant="contained"
-      color="secondary"
+      color="primary"
       disabled={Boolean(disabled) || loading}
       startIcon={
         loading ? (
@@ -22,7 +22,7 @@ export function AuthPrimaryButton(props: AuthPrimaryButtonProps) {
             size={16}
             color="inherit"
           />
-        ) : undefined
+        ) : startIcon
       }
       sx={{
         width: '100%',
@@ -30,7 +30,7 @@ export function AuthPrimaryButton(props: AuthPrimaryButtonProps) {
         '&.Mui-disabled': {
           opacity: 1,
           color: 'common.white',
-          backgroundColor: 'secondary.main'
+          backgroundColor: 'primary.main'
         },
         '&.Mui-disabled.MuiButton-contained': {
           opacity: 0.6

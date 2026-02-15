@@ -1,6 +1,7 @@
 import AppleIcon from '@mui/icons-material/Apple';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import GoogleIcon from '@mui/icons-material/Google';
+import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
 import Button, { ButtonProps } from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ReactNode } from 'react';
@@ -8,21 +9,23 @@ import { ReactNode } from 'react';
 import { SocialProvider } from '../types';
 
 type AuthSocialProviderButtonProps = Omit<ButtonProps, 'variant' | 'color'> & {
-  provider: SocialProvider;
+  provider: SocialProvider | 'sms';
   loading?: boolean;
   loadingLabel?: ReactNode;
 };
 
-const providerIcon: Record<SocialProvider, ReactNode> = {
+const providerIcon: Record<SocialProvider | 'sms', ReactNode> = {
   google: <GoogleIcon fontSize='small' />,
   facebook: <FacebookIcon fontSize='small' />,
-  apple: <AppleIcon fontSize='small' />
+  apple: <AppleIcon fontSize='small' />,
+  sms: <PhoneIphoneIcon fontSize='small' />
 };
 
-const providerLabel: Record<SocialProvider, string> = {
+const providerLabel: Record<SocialProvider | 'sms', string> = {
   google: 'Google',
   facebook: 'Facebook',
-  apple: 'Apple'
+  apple: 'Apple',
+  sms: 'SMS'
 };
 
 export function AuthSocialProviderButton(props: AuthSocialProviderButtonProps) {

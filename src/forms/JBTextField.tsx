@@ -17,7 +17,7 @@ export function JBTextField<
   TFieldValues extends FieldValues,
   TName extends Path<TFieldValues>
 >(props: JBTextFieldProps<TFieldValues, TName>) {
-  const { control, name, rules, ...textFieldProps } = props;
+  const { control, name, rules, size = 'medium', ...textFieldProps } = props;
 
   return (
     <Controller
@@ -28,6 +28,7 @@ export function JBTextField<
         <TextField
           {...textFieldProps}
           {...field}
+          size={size}
           value={field.value ?? ''}
           error={!!fieldState.error}
           helperText={getJBFieldErrorMessage(fieldState.error)}

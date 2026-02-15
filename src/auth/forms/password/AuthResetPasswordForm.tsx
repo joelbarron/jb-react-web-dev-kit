@@ -2,6 +2,7 @@ import { Button, Stack } from '@mui/material';
 import { useForm } from 'react-hook-form';
 
 import { JBTextField } from '../../../forms';
+import { getDjangoLikePasswordError } from './passwordValidation';
 
 export type AuthResetPasswordFormValues = {
   newPassword: string;
@@ -37,7 +38,10 @@ export function AuthResetPasswordForm(props: AuthResetPasswordFormProps) {
           label="Nueva contraseña"
           type="password"
           fullWidth
-          rules={{ required: 'El password es requerido' }}
+          rules={{
+            required: 'El password es requerido',
+            validate: (value) => getDjangoLikePasswordError(value) ?? true
+          }}
         />
         <JBTextField
           control={control}

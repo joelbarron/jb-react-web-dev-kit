@@ -1,10 +1,13 @@
-import Box from "@mui/material/Box";
+import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import PersonAddAlt1OutlinedIcon from '@mui/icons-material/PersonAddAlt1Outlined';
 import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
+import { JBAuthProfileRoleOption, JBAuthSocialConfig } from "../../config";
 import {
   AuthAccountConfirmationForm,
   AuthForgotPasswordForm,
@@ -13,20 +16,17 @@ import {
   AuthPasswordSignInForm,
   AuthSignUpForm,
 } from "../forms";
-import { JBAuthProfileRoleOption, JBAuthSocialConfig } from "../../config";
+import { parseAuthError } from "../forms/errorParser";
 import { authenticateWithSocialProvider } from "../social/providerAuth";
-import { useFuseJwtAuth } from "./fuseAdapter";
+import { LoginSocialPrecheckResponse, SocialProvider } from "../types";
 import {
   AuthLinkComponent,
+  AuthPageTitle,
   AuthRoleSelectionDialog,
-  AuthSocialProviderButton,
   AuthSecondaryButton,
-  SignInPageTitle,
-  SignOutPageTitle,
-  SignUpPageTitle,
+  AuthSocialProviderButton,
 } from "../ui";
-import { SocialProvider } from "../types";
-import { parseAuthError } from "../forms/errorParser";
+import { useFuseJwtAuth } from "./fuseAdapter";
 
 type SignInFormMode = "password" | "otp";
 const IS_DEV =
@@ -78,6 +78,69 @@ type EnabledSocialProvider = {
 
 const SOCIAL_PROVIDER_ORDER: SocialProvider[] = ["google", "facebook", "apple"];
 
+const parseBooleanLike = (value: unknown): boolean | undefined => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true") {
+      return true;
+    }
+    if (normalized === "false") {
+      return false;
+    }
+  }
+  if (typeof value === "number") {
+    if (value === 1) {
+      return true;
+    }
+    if (value === 0) {
+      return false;
+    }
+  }
+  return undefined;
+};
+
+const shouldSelectRoleForSocialLogin = (
+  precheckResponse: LoginSocialPrecheckResponse,
+  hasRoleOptions: boolean
+) => {
+  if (!hasRoleOptions) {
+    return false;
+  }
+
+  const userExists =
+    parseBooleanLike(precheckResponse.userExists) ??
+    parseBooleanLike(precheckResponse.user_exists);
+  if (typeof userExists === "boolean") {
+    return !userExists;
+  }
+
+  const wouldCreateUser =
+    parseBooleanLike(precheckResponse.wouldCreateUser) ??
+    parseBooleanLike(precheckResponse.would_create_user);
+  if (typeof wouldCreateUser === "boolean") {
+    return wouldCreateUser;
+  }
+
+  const socialAccountExists =
+    parseBooleanLike(precheckResponse.socialAccountExists) ??
+    parseBooleanLike(precheckResponse.social_account_exists);
+  if (socialAccountExists === true) {
+    return false;
+  }
+
+  const linkedExistingUser =
+    parseBooleanLike(precheckResponse.linkedExistingUser) ??
+    parseBooleanLike(precheckResponse.linked_existing_user);
+  if (linkedExistingUser === true) {
+    return false;
+  }
+
+  return hasRoleOptions;
+};
+
 function getEnabledSocialProviders(
   socialConfig?: JBAuthSocialConfig,
   showDebugSocial?: boolean
@@ -113,12 +176,13 @@ function getEnabledSocialProviders(
 type FuseSignInControllerProps = {
   LinkComponent: AuthLinkComponent;
   mode?: SignInFormMode;
+  disabled?: boolean;
   onBackToPassword?: () => void;
   requestRoleSelection?: () => Promise<string | undefined>;
 };
 
 function FuseSignInController(props: FuseSignInControllerProps) {
-  const { LinkComponent, mode = "password", onBackToPassword, requestRoleSelection } = props;
+  const { LinkComponent, mode = "password", disabled = false, onBackToPassword, requestRoleSelection } = props;
   const { signIn, requestOtp, signInOtp } = useFuseJwtAuth();
 
   if (mode === "otp") {
@@ -148,6 +212,7 @@ function FuseSignInController(props: FuseSignInControllerProps) {
   return (
     <AuthPasswordSignInForm
       defaultValues={DEV_LOGIN_DEFAULT_VALUES}
+      disabled={disabled}
       LinkComponent={LinkComponent}
       onSubmit={(values) =>
         signIn({
@@ -166,16 +231,18 @@ type FuseSignUpControllerProps = {
     response: Record<string, unknown>;
   }) => void;
   requiresRoleSelection?: boolean;
+  disabled?: boolean;
   requestRoleSelection?: () => Promise<string | undefined>;
 };
 
 function FuseSignUpController(props: FuseSignUpControllerProps) {
-  const { onSuccess, requestRoleSelection, requiresRoleSelection = false } = props;
+  const { onSuccess, requestRoleSelection, requiresRoleSelection = false, disabled = false } = props;
   const { signUp } = useFuseJwtAuth();
 
   return (
     <AuthSignUpForm
       defaultValues={DEV_SIGN_UP_DEFAULT_VALUES}
+      disabled={disabled}
       onSubmit={async (values) => {
         const selectedRole = requestRoleSelection
           ? await requestRoleSelection()
@@ -248,7 +315,7 @@ function FuseAuthAlternativesSection(props: AlternativesProps) {
           sx={{ mt: "1px", flex: 1, borderTop: 1, borderColor: "divider" }}
         />
         <Typography sx={{ mx: 1 }} color="text.secondary">
-          O continúa con
+          O accede con
         </Typography>
         <Box
           sx={{ mt: "1px", flex: 1, borderTop: 1, borderColor: "divider" }}
@@ -272,13 +339,14 @@ function FuseAuthAlternativesSection(props: AlternativesProps) {
           />
         ))}
 
-        <AuthSecondaryButton
-          sx={{ minWidth: 0 }}
+        <AuthSocialProviderButton
           aria-label="SMS"
+          provider="sms"
+          disabled={Boolean(socialLoadingProvider)}
           onClick={onSmsClick}
-          startIcon={<PhoneIphoneIcon fontSize="small" />}>
+>
           SMS
-        </AuthSecondaryButton>
+        </AuthSocialProviderButton>
       </Box>
 
       {socialError ? (
@@ -293,10 +361,11 @@ function FuseAuthAlternativesSection(props: AlternativesProps) {
 type SignUpCtaProps = {
   LinkComponent: AuthLinkComponent;
   signUpPath?: string;
+  disabled?: boolean;
 };
 
 function FuseSignUpCtaSection(props: SignUpCtaProps) {
-  const { LinkComponent, signUpPath = "/sign-up" } = props;
+  const { LinkComponent, signUpPath = "/sign-up", disabled = false } = props;
 
   return (
     <>
@@ -317,6 +386,13 @@ function FuseSignUpCtaSection(props: SignUpCtaProps) {
           component={LinkComponent}
           to={signUpPath}
           sx={{ flex: 1 }}
+          disabled={disabled}
+          startIcon={<PersonAddAlt1OutlinedIcon fontSize="small" />}
+          onClick={(event) => {
+            if (disabled) {
+              event.preventDefault();
+            }
+          }}
           aria-label="Crear cuenta"
         >
           Crear cuenta
@@ -329,10 +405,11 @@ function FuseSignUpCtaSection(props: SignUpCtaProps) {
 type SignInCtaProps = {
   LinkComponent: AuthLinkComponent;
   signInPath?: string;
+  disabled?: boolean;
 };
 
 function FuseSignInCtaSection(props: SignInCtaProps) {
-  const { LinkComponent, signInPath = "/sign-in" } = props;
+  const { LinkComponent, signInPath = "/sign-in", disabled = false } = props;
 
   return (
     <>
@@ -353,6 +430,13 @@ function FuseSignInCtaSection(props: SignInCtaProps) {
           component={LinkComponent}
           to={signInPath}
           sx={{ flex: 1 }}
+          disabled={disabled}
+          startIcon={<EmailOutlinedIcon fontSize="small" />}
+          onClick={(event) => {
+            if (disabled) {
+              event.preventDefault();
+            }
+          }}
           aria-label="Iniciar sesión"
         >
           Iniciar sesión
@@ -362,12 +446,29 @@ function FuseSignInCtaSection(props: SignInCtaProps) {
   );
 }
 
-function FuseForgotPasswordPageForm() {
+type ForgotPasswordFormProps = {
+  LinkComponent: AuthLinkComponent;
+};
+
+function FuseForgotPasswordPageForm(props: ForgotPasswordFormProps) {
+  const { LinkComponent } = props;
   const { requestPasswordReset } = useFuseJwtAuth();
+
   return (
-    <AuthForgotPasswordForm
-      onSubmit={(values) => requestPasswordReset({ email: values.email })}
-    />
+    <>
+      <AuthForgotPasswordForm
+        onSubmit={(values) => requestPasswordReset({ email: values.email })}
+      />
+      <AuthSecondaryButton
+        sx={{ mt: 2 }}
+        component={LinkComponent}
+        to="/sign-in"
+        startIcon={<ArrowBackOutlinedIcon fontSize="small" />}
+        aria-label="Regresar a iniciar sesión"
+      >
+        Regresar a iniciar sesión
+      </AuthSecondaryButton>
+    </>
   );
 }
 
@@ -379,6 +480,7 @@ type ResetPasswordFormProps = {
 function FuseResetPasswordPageForm(props: ResetPasswordFormProps) {
   const { initialUid = "", initialToken = "" } = props;
   const { confirmPasswordReset } = useFuseJwtAuth();
+  const navigate = useNavigate();
 
   return (
     <AuthPasswordResetConfirmForm
@@ -386,6 +488,7 @@ function FuseResetPasswordPageForm(props: ResetPasswordFormProps) {
         uid: initialUid,
         token: initialToken,
       }}
+      onGoToSignIn={() => navigate('/sign-in')}
       onSubmit={(values) => confirmPasswordReset(values)}
     />
   );
@@ -489,7 +592,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
 
   function SignInPageView() {
     const [mode, setMode] = useState<SignInFormMode>("password");
-    const { signInSocial } = useFuseJwtAuth();
+    const { signInSocial, signInSocialPrecheck } = useFuseJwtAuth();
     const [socialLoadingProvider, setSocialLoadingProvider] = useState<SocialProvider | null>(null);
     const [socialError, setSocialError] = useState<string | null>(null);
     const signupRoleOptions = (signUpRoleOptions ?? [])
@@ -506,6 +609,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
       () => getEnabledSocialProviders(socialConfig, showDebugSocial),
       [socialConfig, showDebugSocial]
     );
+    const isAuthFlowBusy = socialLoadingProvider !== null;
 
     const onSocialClick = useCallback(
       async (provider: SocialProvider) => {
@@ -524,8 +628,20 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
           if (showDebugSocial) {
             console.info("[jb-auth][social] provider token payload ready", { provider, tokenPayload });
           }
-          const selectedRole = hasRoleOptions ? await requestRoleSelection() : undefined;
-          if (hasRoleOptions && !selectedRole) {
+          const baseSocialPayload = {
+            ...tokenPayload,
+            provider,
+            client: "web" as const,
+            termsAndConditionsAccepted: true,
+          };
+
+          if (showDebugSocial) {
+            console.info("[jb-auth][social] sending social precheck", { provider, client: "web" });
+          }
+          const socialPrecheckResponse = await signInSocialPrecheck(baseSocialPayload);
+          const shouldSelectRole = shouldSelectRoleForSocialLogin(socialPrecheckResponse, hasRoleOptions);
+          const selectedRole = shouldSelectRole ? await requestRoleSelection() : undefined;
+          if (shouldSelectRole && !selectedRole) {
             return;
           }
 
@@ -537,23 +653,20 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
             });
           }
           await signInSocial({
-            ...tokenPayload,
-            provider,
+            ...baseSocialPayload,
             role: selectedRole,
-            client: "web",
-            termsAndConditionsAccepted: true,
           });
         } catch (error) {
           if (showDebugSocial) {
             console.error("[jb-auth][social] flow failed", { provider, error });
           }
           const parsed = parseAuthError(error);
-          setSocialError(parsed.rootMessage || "No se pudo continuar con el proveedor social.");
+          setSocialError(parsed.rootMessage || "No se pudo acceder con el proveedor social.");
         } finally {
           setSocialLoadingProvider(null);
         }
       },
-      [enabledSocialProviders, hasRoleOptions, requestRoleSelection, showDebugSocial, signInSocial]
+      [enabledSocialProviders, hasRoleOptions, requestRoleSelection, showDebugSocial, signInSocial, signInSocialPrecheck]
     );
 
     return (
@@ -567,18 +680,22 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
           gap: 4,
         }}
       >
-        <SignInPageTitle />
+        <AuthPageTitle title="Iniciar sesión" />
         <Box sx={{ width: "100%" }}>
           <FuseSignInController
             LinkComponent={LinkComponent}
             mode={mode}
+            disabled={isAuthFlowBusy}
             requestRoleSelection={requestRoleSelection}
             onBackToPassword={() => setMode("password")}
           />
 
           {mode === "password" && (
             <>
-              <FuseSignUpCtaSection LinkComponent={LinkComponent} />
+              <FuseSignUpCtaSection
+                LinkComponent={LinkComponent}
+                disabled={isAuthFlowBusy}
+              />
               <FuseAuthAlternativesSection
                 onSmsClick={() => setMode("otp")}
                 socialProviders={enabledSocialProviders}
@@ -596,7 +713,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
 
   function SignUpPageView() {
     const [mode, setMode] = useState<SignInFormMode>("password");
-    const { signInSocial } = useFuseJwtAuth();
+    const { signInSocial, signInSocialPrecheck } = useFuseJwtAuth();
     const [socialLoadingProvider, setSocialLoadingProvider] = useState<SocialProvider | null>(null);
     const [socialError, setSocialError] = useState<string | null>(null);
     const navigate = useNavigate();
@@ -614,6 +731,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
       () => getEnabledSocialProviders(socialConfig, showDebugSocial),
       [socialConfig, showDebugSocial]
     );
+    const isAuthFlowBusy = socialLoadingProvider !== null;
 
     const onSocialClick = useCallback(
       async (provider: SocialProvider) => {
@@ -632,8 +750,20 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
           if (showDebugSocial) {
             console.info("[jb-auth][social] provider token payload ready", { provider, tokenPayload });
           }
-          const selectedRole = hasRoleOptions ? await requestRoleSelection() : undefined;
-          if (hasRoleOptions && !selectedRole) {
+          const baseSocialPayload = {
+            ...tokenPayload,
+            provider,
+            client: "web" as const,
+            termsAndConditionsAccepted: true,
+          };
+
+          if (showDebugSocial) {
+            console.info("[jb-auth][social] sending social precheck", { provider, client: "web" });
+          }
+          const socialPrecheckResponse = await signInSocialPrecheck(baseSocialPayload);
+          const shouldSelectRole = shouldSelectRoleForSocialLogin(socialPrecheckResponse, hasRoleOptions);
+          const selectedRole = shouldSelectRole ? await requestRoleSelection() : undefined;
+          if (shouldSelectRole && !selectedRole) {
             return;
           }
 
@@ -645,23 +775,20 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
             });
           }
           await signInSocial({
-            ...tokenPayload,
-            provider,
+            ...baseSocialPayload,
             role: selectedRole,
-            client: "web",
-            termsAndConditionsAccepted: true,
           });
         } catch (error) {
           if (showDebugSocial) {
             console.error("[jb-auth][social] flow failed", { provider, error });
           }
           const parsed = parseAuthError(error);
-          setSocialError(parsed.rootMessage || "No se pudo continuar con el proveedor social.");
+          setSocialError(parsed.rootMessage || "No se pudo acceder con el proveedor social.");
         } finally {
           setSocialLoadingProvider(null);
         }
       },
-      [enabledSocialProviders, hasRoleOptions, requestRoleSelection, showDebugSocial, signInSocial]
+      [enabledSocialProviders, hasRoleOptions, requestRoleSelection, showDebugSocial, signInSocial, signInSocialPrecheck]
     );
 
     return (
@@ -675,11 +802,12 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
           gap: 4,
         }}
       >
-        <SignUpPageTitle />
+        <AuthPageTitle title="Crear cuenta" />
         <Box sx={{ width: "100%" }}>
           {mode === "password" ? (
             <>
               <FuseSignUpController
+                disabled={isAuthFlowBusy}
                 requiresRoleSelection={hasRoleOptions}
                 requestRoleSelection={requestRoleSelection}
                 onSuccess={(payload) => {
@@ -690,7 +818,10 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
                   );
                 }}
               />
-              <FuseSignInCtaSection LinkComponent={LinkComponent} />
+              <FuseSignInCtaSection
+                LinkComponent={LinkComponent}
+                disabled={isAuthFlowBusy}
+              />
               <FuseAuthAlternativesSection
                 onSmsClick={() => setMode("otp")}
                 socialProviders={enabledSocialProviders}
@@ -724,37 +855,14 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
         }}
       >
         <Box sx={{ width: "100%" }}>
-          <img
-            style={{ width: 48 }}
-            src="/assets/images/logo/logo.svg"
-            alt="logo"
-          />
-
-          <Typography
-            sx={{
-              mt: 4,
-              fontSize: 36,
-              lineHeight: 1.25,
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Olvidé mi contraseña
-          </Typography>
-          <Typography sx={{ mt: 1.5, fontSize: 16 }} color="text.secondary">
+          <AuthPageTitle title="Olvidé mi contraseña" />
+          <Typography sx={{ mt: 1.5, fontSize: 16, textAlign: "center" }} color="text.secondary">
             Ingresa tu correo y te enviaremos un enlace para restablecer tu
             contraseña.
           </Typography>
         </Box>
 
-        <FuseForgotPasswordPageForm />
-
-        <Typography
-          sx={{ fontSize: 16, fontWeight: 500 }}
-          color="text.secondary"
-        >
-          Volver a <LinkComponent to="/sign-in">Iniciar sesión</LinkComponent>
-        </Typography>
+        <FuseForgotPasswordPageForm LinkComponent={LinkComponent} />
       </Box>
     );
   }
@@ -782,23 +890,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
         }}
       >
         <Box sx={{ width: "100%" }}>
-          <img
-            style={{ width: 48 }}
-            src="/assets/images/logo/logo.svg"
-            alt="logo"
-          />
-
-          <Typography
-            sx={{
-              mt: 4,
-              fontSize: 36,
-              lineHeight: 1.25,
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Restablecer contraseña
-          </Typography>
+          <AuthPageTitle title="Restablecer contraseña" />
           <Typography sx={{ mt: 1.5, fontSize: 16 }} color="text.secondary">
             Define una nueva contraseña para volver a acceder a tu cuenta.
           </Typography>
@@ -808,13 +900,6 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
           initialUid={initialUid}
           initialToken={initialToken}
         />
-
-        <Typography
-          sx={{ fontSize: 16, fontWeight: 500 }}
-          color="text.secondary"
-        >
-          Volver a <LinkComponent to="/sign-in">Iniciar sesión</LinkComponent>
-        </Typography>
       </Box>
     );
   }
@@ -828,7 +913,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
           maxWidth: 320,
         }}
       >
-        <SignOutPageTitle />
+        <AuthPageTitle title="Has cerrado sesión" />
 
         <Typography
           sx={{ mt: 2, textAlign: "center", fontSize: 16, fontWeight: 500 }}
@@ -863,23 +948,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
         }}
       >
         <Box sx={{ width: "100%" }}>
-          <img
-            style={{ width: 48 }}
-            src="/assets/images/logo/logo.svg"
-            alt="logo"
-          />
-
-          <Typography
-            sx={{
-              mt: 4,
-              fontSize: 36,
-              lineHeight: 1.25,
-              fontWeight: 800,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Verificar cuenta
-          </Typography>
+          <AuthPageTitle title="Verificar cuenta" />
           <Typography sx={{ mt: 1.5, fontSize: 16 }} color="text.secondary">
             Estamos validando tu enlace de confirmación.
           </Typography>
