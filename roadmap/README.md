@@ -1,8 +1,8 @@
 # Roadmap
 
-Estado de avance por sección de la librería `@joelbarron/react-web-dev-kit`.
+Progress status by section for the `@joelbarron/react-web-dev-kit` library.
 
-## Secciones
+## Sections
 - [Auth](./auth.md)
 - [Core](./core.md)
 - [Forms](./forms.md)
@@ -10,8 +10,8 @@ Estado de avance por sección de la librería `@joelbarron/react-web-dev-kit`.
 - [Grid](./grid.md)
 - [Docs](./docs.md)
 
-## Convención de estatus
-- ✅ Completado
-- 🟡 En progreso
-- 🔜 Pendiente
-- 🚧 Riesgo / deuda técnica
+## Status Convention
+- ✅ Completed
+- 🟡 In Progress
+- 🔜 Pending
+- 🚧 Risk / Technical Debt

@@ -1,19 +1,20 @@
 # Docs Roadmap
 
-## ✅ Completado
-- ✅ Base de documentación por módulos en carpeta `docs/`.
+## ✅ Completed
+- ✅ Base module documentation in the `docs/` folder.
+- ✅ Auth test matrix created (`roadmap/auth-test-matrix.md`) and linked from the auth roadmap.
 
-## 🟡 En progreso
-- 🟡 Guías de uso por sección (`auth`, `forms`, `grid`, `core`).
-- 🟡 Alinear ejemplos de docs con estado real de la API y componentes.
-- 🟡 Documentar estrategia de config central (`createJBWebConfig`) para auth.
-- 🟡 Añadir guía de migración de nombres legacy (`JB*`) a nombres nuevos internos (`Auth*`).
+## 🟡 In Progress
+- 🟡 Usage guides by section (`auth`, `forms`, `grid`, `core`).
+- 🟡 Align docs examples with the current API/component state.
+- 🟡 Document central config strategy (`createJBWebConfig`) for auth.
+- 🟡 Add migration guide from legacy names (`JB*`) to new internal names (`Auth*`).
 
-## 🔜 Pendiente
-- 🔜 Troubleshooting oficial (cache, package link, MUI context, etc.).
-- 🔜 Playbooks de integración en proyecto nuevo.
-- 🔜 Referencias cruzadas desde `README.md` principal.
-- 🔜 Sección de contrato API actualizado (social/link/unlink/profile picture).
+## 🔜 Pending
+- 🔜 Official troubleshooting (cache, package link, MUI context, etc.).
+- 🔜 Integration playbooks for new projects.
+- 🔜 Cross-links from the main `README.md`.
+- 🔜 Updated API contract section (social/link/unlink/profile picture).
 
-## 🚧 Riesgos / deuda técnica
-- 🚧 Documentación desactualizada si no se versiona junto con cambios de API.
+## 🚧 Risks / Technical Debt
+- 🚧 Documentation drifts out of date if not versioned together with API changes.

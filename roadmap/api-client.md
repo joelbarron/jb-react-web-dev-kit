@@ -1,19 +1,19 @@
 # API Client Roadmap
 
-## ✅ Completado
-- ✅ Cliente axios auth centralizado.
-- ✅ Endpoints configurables por proyecto.
-- ✅ Interceptor con manejo de 401 y refresh token.
-- ✅ Normalización base de algunas respuestas (`emailSent`, etc.).
+## ✅ Completed
+- ✅ Centralized Axios auth client.
+- ✅ Project-configurable endpoints.
+- ✅ Interceptor with 401 handling and refresh token flow.
+- ✅ Base normalization for selected responses (`emailSent`, etc.).
 
-## 🟡 En progreso
-- 🟡 Normalización de errores API en capa común.
-- 🟡 Estándar de mapeo request/response por módulo.
+## 🟡 In Progress
+- 🟡 API error normalization in a shared layer.
+- 🟡 Request/response mapping standard per module.
 
-## 🔜 Pendiente
-- 🔜 Estrategia de retries/timeouts/cancelación por endpoint.
-- 🔜 Telemetría opcional para debug de requests.
-- 🔜 Tests de integración para refresh race conditions.
+## 🔜 Pending
+- 🔜 Retry/timeout/cancellation strategy per endpoint.
+- 🔜 Optional request telemetry for debugging.
+- 🔜 Integration tests for refresh race conditions.
 
-## 🚧 Riesgos / deuda técnica
-- 🚧 Edge cases de sesión multi-tab y refresh concurrente.
+## 🚧 Risks / Technical Debt
+- 🚧 Multi-tab session edge cases and concurrent refresh behavior.

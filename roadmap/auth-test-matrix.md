@@ -49,7 +49,7 @@ Test levels:
 | AUTH-SI-003 | Sign in password | I/E2E | Unverified account | Login with `user_unverified` | Error shown + CTA `Ir a verificar cuenta` visible |
 | AUTH-SI-004 | Sign in password | I | Empty form validation | Submit empty form | Required errors for login/password |
 | AUTH-SI-005 | Sign in password | I | Disabled/loading state | Trigger loading submit | Submit disabled + loading label shown |
-| AUTH-SI-006 | Sign in password | E2E | Forgot-password link | Click `¿Olvidaste tu contraseña?` | Navigates to `/forgot-password` |
+| AUTH-SI-006 | Sign in password | E2E | Forgot-password link | Click `Forgot your password?` | Navigates to `/forgot-password` |
 | AUTH-OTP-001 | OTP sign in | I/E2E | Request OTP happy path | Enter phone + request | Confirm dialog appears, OTP requested, success info shown |
 | AUTH-OTP-002 | OTP sign in | I/E2E | Verify OTP happy path | Request OTP then verify with `otp_valid` | User authenticated |
 | AUTH-OTP-003 | OTP sign in | I/E2E | Wrong code | Verify with `otp_invalid` | Error message shown, stays on OTP form |
@@ -76,6 +76,8 @@ Test levels:
 | AUTH-SOC-002 | Social auth | I/E2E | Provider popup/callback error | Cancel/fail provider flow | Error alert shown |
 | AUTH-SOC-003 | Social auth | I | Disabled providers | Missing `clientId` or disabled config | Button not rendered |
 | AUTH-SOC-004 | Social auth | I | Busy state exclusivity | One provider in progress | Other providers and SMS button disabled |
+| AUTH-SOC-005 | Social auth | I/E2E | Precheck user exists | `social/precheck` returns `user_exists=true` | No role modal, continue to social login |
+| AUTH-SOC-006 | Social auth | I/E2E | Precheck user does not exist | `social/precheck` returns `user_exists=false` | Role modal opens, role required before social login |
 | AUTH-SES-001 | Session | I/E2E | Auto login from token | App load with valid token | `getMe` called, auth restored |
 | AUTH-SES-002 | Session | I/E2E | Refresh token success | Expired access + valid refresh | Session remains authenticated |
 | AUTH-SES-003 | Session | I/E2E | Unauthorized handling | API 401 and refresh fails | Session cleared, auth `unauthenticated` |

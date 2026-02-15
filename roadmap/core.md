@@ -1,21 +1,21 @@
 # Core Roadmap
 
-## ✅ Completado
-- ✅ Exportaciones centralizadas por módulo para consumo simple.
-- ✅ Integración con `FuseAuthProvider` y autorización por roles.
-- ✅ Base para minimizar responsabilidad del proyecto consumidor.
-- ✅ Estructura de carpetas auth simplificada y más mantenible (separación por dominio + fuse aislado).
-- ✅ `createJBWebConfig` integrado como fuente real para `apiBasePath` y roles de signup en wiring de referencia.
+## ✅ Completed
+- ✅ Centralized exports per module for simple consumption.
+- ✅ Integration with `FuseAuthProvider` and role-based authorization.
+- ✅ Foundation to minimize consumer project responsibilities.
+- ✅ Simplified and maintainable auth folder structure (domain split + isolated fuse).
+- ✅ `createJBWebConfig` integrated as the real source for `apiBasePath` and signup roles in reference wiring.
 
-## 🟡 En progreso
-- 🟡 Reducir código puente restante en consumidores.
-- 🟡 Fortalecer contratos de tipos públicos para evitar uso frágil.
-- 🟡 Estandarizar `createJBWebConfig` como única fuente de verdad para auth/runtime settings.
+## 🟡 In Progress
+- 🟡 Reduce remaining bridge code in consumer apps.
+- 🟡 Strengthen public type contracts to avoid fragile usage.
+- 🟡 Standardize `createJBWebConfig` as the single source of truth for auth/runtime settings.
 
-## 🔜 Pendiente
-- 🔜 API pública estable (v1) con manejo formal de breaking changes.
-- 🔜 Matriz de compatibilidad (React, MUI, Router).
-- 🔜 Plantilla de migración para que apps existentes dejen config hardcodeada de auth.
+## 🔜 Pending
+- 🔜 Stable public API (v1) with formal breaking-change handling.
+- 🔜 Compatibility matrix (React, MUI, Router).
+- 🔜 Migration template to move existing apps away from hardcoded auth config.
 
-## 🚧 Riesgos / deuda técnica
-- 🚧 Acoplamiento parcial a implementación específica de consumidores.
+## 🚧 Risks / Technical Debt
+- 🚧 Partial coupling to specific consumer implementations.
