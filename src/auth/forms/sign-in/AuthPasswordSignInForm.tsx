@@ -1,14 +1,20 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import { useEffect } from 'react';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { JBCheckboxField, JBTextField } from '../../../forms';
-import { AuthPrimaryButton, AuthSecondaryButton } from '../../ui';
-import { parseAuthError } from '../errorParser';
 import type { AuthLinkComponent } from '../../ui';
+import { AuthPrimaryButton, AuthSecondaryButton } from '../../ui';
+import { getDjangoLikePasswordError } from '../password/passwordValidation';
+import { parseAuthError } from '../errorParser';
 
 export type AuthPasswordSignInFormValues = {
   login: string;
@@ -19,6 +25,7 @@ export type AuthPasswordSignInFormValues = {
 export type AuthPasswordSignInFormProps = {
   defaultValues?: Partial<AuthPasswordSignInFormValues>;
   loading?: boolean;
+  disabled?: boolean;
   submitLabel?: string;
   forgotPasswordPath?: string;
   rememberLabel?: string;
@@ -32,10 +39,23 @@ export type AuthPasswordSignInFormProps = {
 
 const signInSchema = z.object({
   login: z.string().nonempty('Debes ingresar tu usuario o correo'),
-  password: z
-    .string()
-    .min(4, 'La contraseña es muy corta - mínimo 4 caracteres.')
-    .nonempty('Debes ingresar tu contraseña.'),
+  password: z.string().superRefine((value, ctx) => {
+    if (!value) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes ingresar tu contraseña.'
+      });
+      return;
+    }
+
+    const passwordError = getDjangoLikePasswordError(value);
+    if (passwordError) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: passwordError
+      });
+    }
+  }),
   remember: z.boolean().optional()
 });
 
@@ -43,6 +63,7 @@ export function AuthPasswordSignInForm(props: AuthPasswordSignInFormProps) {
   const {
     defaultValues,
     loading = false,
+    disabled = false,
     submitLabel = 'Iniciar sesión',
     forgotPasswordPath = '/forgot-password',
     rememberLabel = 'Recuérdame',
@@ -66,6 +87,7 @@ export function AuthPasswordSignInForm(props: AuthPasswordSignInFormProps) {
   const loginValue = watch('login');
   const passwordValue = watch('password');
   const isLoading = loading || isSubmitting;
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const subscription = watch((_value, { name }) => {
@@ -158,16 +180,30 @@ export function AuthPasswordSignInForm(props: AuthPasswordSignInFormProps) {
         variant="outlined"
         required
         fullWidth
+        disabled={disabled}
       />
       <JBTextField
         control={control}
         name="password"
         sx={{ mb: 3 }}
         label={passwordLabel}
-        type="password"
+        type={showPassword ? 'text' : 'password'}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                edge="end"
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                onClick={() => setShowPassword((prev) => !prev)}>
+                {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
+              </IconButton>
+            </InputAdornment>
+          )
+        }}
         variant="outlined"
         required
         fullWidth
+        disabled={disabled}
       />
 
       <Box
@@ -199,17 +235,41 @@ export function AuthPasswordSignInForm(props: AuthPasswordSignInFormProps) {
               color: 'secondary.main'
             }
           }}
+          disabled={disabled}
         />
 
-        {LinkComponent ? <LinkComponent to={forgotPasswordPath}>¿Olvidaste tu contraseña?</LinkComponent> : null}
+        {LinkComponent ? (
+          disabled ? (
+            <Box
+              component='span'
+              sx={{ color: 'text.disabled' }}>
+              ¿Olvidaste tu contraseña?
+            </Box>
+          ) : (
+            <Box
+              component={LinkComponent}
+              to={forgotPasswordPath}
+              sx={{
+                color: 'primary.main',
+                fontWeight: 500,
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline'
+                }
+              }}>
+              ¿Olvidaste tu contraseña?
+            </Box>
+          )
+        ) : null}
       </Box>
 
       <AuthPrimaryButton
         sx={{ mt: 2 }}
         aria-label={submitLabel}
-        disabled={isLoading || !loginValue?.trim() || !passwordValue}
+        disabled={disabled || isLoading || !loginValue?.trim() || !passwordValue}
         loading={isLoading}
         loadingLabel="Iniciando sesión..."
+        startIcon={<EmailOutlinedIcon fontSize="small" />}
         type="submit"
         size="large">
         {submitLabel}

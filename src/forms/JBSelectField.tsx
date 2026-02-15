@@ -20,7 +20,7 @@ export function JBSelectField<
   TFieldValues extends FieldValues,
   TName extends Path<TFieldValues>
 >(props: JBSelectFieldProps<TFieldValues, TName>) {
-  const { control, name, rules, options, emptyOptionLabel, ...textFieldProps } = props;
+  const { control, name, rules, options, emptyOptionLabel, size = 'medium', ...textFieldProps } = props;
 
   return (
     <Controller
@@ -31,6 +31,7 @@ export function JBSelectField<
         <TextField
           {...textFieldProps}
           {...field}
+          size={size}
           select
           value={field.value ?? ''}
           error={!!fieldState.error}

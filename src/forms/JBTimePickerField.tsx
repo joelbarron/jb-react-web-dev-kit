@@ -21,6 +21,7 @@ export function JBTimePickerField<
   TName extends Path<TFieldValues>
 >(props: JBTimePickerFieldProps<TFieldValues, TName>) {
   const { control, name, rules, textFieldProps, ...timePickerProps } = props;
+  const { size = 'medium', ...resolvedTextFieldProps } = textFieldProps ?? {};
 
   return (
     <Controller
@@ -34,9 +35,10 @@ export function JBTimePickerField<
           onChange={(value) => field.onChange(value)}
           slotProps={{
             textField: {
-              ...textFieldProps,
+              ...resolvedTextFieldProps,
+              size,
               error: !!fieldState.error,
-              helperText: getJBFieldErrorMessage(fieldState.error) ?? textFieldProps?.helperText
+              helperText: getJBFieldErrorMessage(fieldState.error) ?? resolvedTextFieldProps.helperText
             }
           }}
         />

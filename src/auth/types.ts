@@ -15,6 +15,7 @@ export type TokenStorage = {
 export type JbDrfAuthEndpoints = {
   loginBasic: string;
   loginSocial: string;
+  loginSocialPrecheck: string;
   loginSocialLink: string;
   loginSocialUnlink: string;
   loginOtpVerify: string;
@@ -80,6 +81,24 @@ export type LoginSocialPayload = {
   client?: 'web' | 'mobile';
   termsAndConditionsAccepted?: boolean;
   device?: SocialDevicePayload;
+};
+
+export type LoginSocialPrecheckResponse = {
+  provider?: SocialProvider;
+  email?: string;
+  emailVerified?: boolean;
+  email_verified?: boolean;
+  socialAccountExists?: boolean;
+  social_account_exists?: boolean;
+  linkedExistingUser?: boolean;
+  linked_existing_user?: boolean;
+  userExists?: boolean;
+  user_exists?: boolean;
+  wouldCreateUser?: boolean;
+  would_create_user?: boolean;
+  canLogin?: boolean;
+  can_login?: boolean;
+  [key: string]: unknown;
 };
 
 export type LinkSocialPayload = {

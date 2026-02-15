@@ -5,6 +5,4 @@ export * from './AuthPrimaryButton';
 export * from './AuthSecondaryButton';
 export * from './AuthSocialProviderButton';
 export * from './AuthRoleSelectionDialog';
-export * from './SignInPageTitle';
-export * from './SignUpPageTitle';
-export * from './SignOutPageTitle';
+export * from './AuthPageTitle';

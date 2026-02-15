@@ -3,6 +3,7 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import { useEffect, useRef, useState } from 'react';
 import { AuthPrimaryButton, AuthSecondaryButton } from '../../ui';
 import { parseAuthError } from '../errorParser';
@@ -239,6 +240,7 @@ export function AuthAccountConfirmationForm(props: AuthAccountConfirmationFormPr
         <Stack sx={{ mt: 1.5 }}>
           <AuthPrimaryButton
             type="button"
+            startIcon={<EmailOutlinedIcon fontSize="small" />}
             onClick={onGoToSignIn}>
             Ir a iniciar sesión
           </AuthPrimaryButton>
@@ -280,6 +282,7 @@ export function AuthAccountConfirmationForm(props: AuthAccountConfirmationFormPr
         <Stack sx={{ mt: 1.5 }}>
           <AuthPrimaryButton
             type="button"
+            startIcon={<EmailOutlinedIcon fontSize="small" />}
             onClick={onGoToSignIn}>
             {`Ir a iniciar sesión${
               typeof signInRedirectCountdown === 'number' && signInRedirectCountdown > 0

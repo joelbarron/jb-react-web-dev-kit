@@ -21,6 +21,7 @@ export function JBDatePickerField<
   TName extends Path<TFieldValues>
 >(props: JBDatePickerFieldProps<TFieldValues, TName>) {
   const { control, name, rules, textFieldProps, ...datePickerProps } = props;
+  const { size = 'medium', ...resolvedTextFieldProps } = textFieldProps ?? {};
 
   return (
     <Controller
@@ -34,9 +35,10 @@ export function JBDatePickerField<
           onChange={(value) => field.onChange(value)}
           slotProps={{
             textField: {
-              ...textFieldProps,
+              ...resolvedTextFieldProps,
+              size,
               error: !!fieldState.error,
-              helperText: getJBFieldErrorMessage(fieldState.error) ?? textFieldProps?.helperText
+              helperText: getJBFieldErrorMessage(fieldState.error) ?? resolvedTextFieldProps.helperText
             }
           }}
         />

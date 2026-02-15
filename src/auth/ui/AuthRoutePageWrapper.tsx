@@ -33,33 +33,37 @@ export function AuthRoutePageWrapper(props: AuthRoutePageWrapperProps) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          p: { md: 4 }
+          width: '100%',
+          p: { xs: 0, sm: 2, md: 4 }
         }}>
         <Paper
           sx={{
             display: 'flex',
-            minHeight: { xs: '100%', sm: 'auto' },
-            width: { xs: '100%', md: '100%' },
-            maxWidth: { md: 1280 },
+            flexDirection: { xs: 'column', lg: 'row' },
+            minHeight: { xs: '100dvh', sm: 'auto' },
+            width: '100%',
+            maxWidth: { lg: 1280 },
             overflow: 'hidden',
             borderRadius: { xs: 0, sm: 3 },
-            boxShadow: { xs: 'none', sm: 1 }
+            boxShadow: { xs: 'none', lg: 1 }
           }}>
           <Box
             sx={{
-              width: { xs: '100%', md: '50%' },
-              px: { xs: 2, sm: 6, md: 8 },
-              py: { xs: 2, sm: 6, md: 8 },
-              borderRight: (theme) => (theme.direction === 'ltr' ? 1 : 0),
-              borderLeft: (theme) => (theme.direction === 'rtl' ? 1 : 0),
+              width: { xs: '100%', lg: '50%' },
+              px: { xs: 2, sm: 4, md: 8 },
+              py: { xs: 3, sm: 5, md: 8 },
+              borderRight: (theme) => ({ xs: 0, lg: theme.direction === 'ltr' ? 1 : 0 }),
+              borderLeft: (theme) => ({ xs: 0, lg: theme.direction === 'rtl' ? 1 : 0 }),
               borderColor: 'divider',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: isSignOut ? 'center' : 'flex-start'
+              justifyContent: 'center'
             }}>
             {children}
           </Box>
-          <MessageSectionComponent {...(messageSectionProps ?? {})} />
+          <Box sx={{ display: { xs: 'none', lg: 'flex' }, width: '50%', minWidth: 0 }}>
+            <MessageSectionComponent {...(messageSectionProps ?? {})} />
+          </Box>
         </Paper>
       </Box>
     );
