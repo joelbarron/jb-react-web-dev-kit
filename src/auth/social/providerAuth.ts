@@ -98,6 +98,7 @@ declare global {
         callback: (response: FacebookLoginResponse) => void,
         options?: {
           scope?: string;
+          display?: 'popup' | 'touch' | 'page';
         }
       ) => void;
     };
@@ -160,6 +161,15 @@ const ensureFacebookSdk = async (clientId: string) => {
     xfbml: false,
     version: 'v20.0'
   });
+};
+
+const isLikelyMobileBrowser = () => {
+  if (typeof navigator === 'undefined') {
+    return false;
+  }
+
+  const userAgent = navigator.userAgent || '';
+  return /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(userAgent);
 };
 
 const logSocialDebug = (enabled: boolean | undefined, message: string, payload?: unknown) => {
@@ -292,14 +302,24 @@ const authenticateWithApple = async (
 const authenticateWithFacebook = async (
   config: SocialProviderClientConfig
 ): Promise<Pick<LoginSocialPayload, 'provider' | 'accessToken' | 'clientId'>> => {
+  const shouldUsePopup = config.usePopup ?? !isLikelyMobileBrowser();
+  const resolvedDisplay: 'popup' | 'touch' | 'page' = shouldUsePopup
+    ? 'popup'
+    : isLikelyMobileBrowser()
+      ? 'touch'
+      : 'page';
+
   logSocialDebug(config.debug, 'facebook provider auth start', {
-    clientId: config.clientId
+    clientId: config.clientId,
+    display: resolvedDisplay,
+    usePopup: shouldUsePopup
   });
   await ensureFacebookSdk(config.clientId);
 
   const response = await new Promise<FacebookLoginResponse>((resolve) => {
     window.FB!.login(resolve, {
-      scope: config.scope ?? 'email,public_profile'
+      scope: config.scope ?? 'email,public_profile',
+      display: resolvedDisplay
     });
   });
 
