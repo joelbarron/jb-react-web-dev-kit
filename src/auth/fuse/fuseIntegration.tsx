@@ -23,6 +23,34 @@ export const fuseAuthRoles = {
   onlyGuest: []
 } as const;
 
+export type FuseAuthRolesMap = Record<string, string[]>;
+
+export function createFuseAuthRoles(customRoles?: FuseAuthRolesMap): FuseAuthRolesMap {
+  const mergedRoles: FuseAuthRolesMap = Object.entries(fuseAuthRoles).reduce<FuseAuthRolesMap>(
+    (accumulator, [roleKey, roleValues]) => {
+      accumulator[roleKey] = [...roleValues];
+      return accumulator;
+    },
+    {}
+  );
+
+  if (!customRoles) {
+    return mergedRoles;
+  }
+
+  Object.entries(customRoles).forEach(([roleKey, roleValues]) => {
+    const normalizedRoleValues = Array.from(new Set(roleValues ?? []));
+    if (!mergedRoles[roleKey]) {
+      mergedRoles[roleKey] = normalizedRoleValues;
+      return;
+    }
+
+    mergedRoles[roleKey] = Array.from(new Set([...mergedRoles[roleKey], ...normalizedRoleValues]));
+  });
+
+  return mergedRoles;
+}
+
 export function createFuseUserModel<TUser extends FuseUser>() {
   return (data?: Partial<TUser>): TUser => {
     const userData = data || {};

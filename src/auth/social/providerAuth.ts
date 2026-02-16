@@ -164,12 +164,20 @@ const ensureFacebookSdk = async (clientId: string) => {
 };
 
 const isLikelyMobileBrowser = () => {
-  if (typeof navigator === 'undefined') {
+  if (typeof navigator === 'undefined' || typeof window === 'undefined') {
     return false;
   }
 
   const userAgent = navigator.userAgent || '';
-  return /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(userAgent);
+  const hasTouch = (navigator.maxTouchPoints ?? 0) > 0;
+  const hasCoarsePointer = typeof window.matchMedia === 'function'
+    ? window.matchMedia('(pointer: coarse)').matches
+    : false;
+  const smallViewport = typeof window.innerWidth === 'number' ? window.innerWidth <= 1024 : false;
+  const isMobileUserAgent = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini|Mobile/i.test(userAgent);
+  const isIpadOsDesktopMode = /Macintosh/i.test(userAgent) && hasTouch;
+
+  return isMobileUserAgent || isIpadOsDesktopMode || ((hasTouch || hasCoarsePointer) && smallViewport);
 };
 
 const logSocialDebug = (enabled: boolean | undefined, message: string, payload?: unknown) => {
@@ -302,10 +310,11 @@ const authenticateWithApple = async (
 const authenticateWithFacebook = async (
   config: SocialProviderClientConfig
 ): Promise<Pick<LoginSocialPayload, 'provider' | 'accessToken' | 'clientId'>> => {
-  const shouldUsePopup = config.usePopup ?? !isLikelyMobileBrowser();
+  const mobileBrowser = isLikelyMobileBrowser();
+  const shouldUsePopup = config.usePopup ?? !mobileBrowser;
   const resolvedDisplay: 'popup' | 'touch' | 'page' = shouldUsePopup
     ? 'popup'
-    : isLikelyMobileBrowser()
+    : mobileBrowser
       ? 'touch'
       : 'page';
 

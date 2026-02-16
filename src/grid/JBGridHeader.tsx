@@ -4,33 +4,53 @@ import { JBGridHeaderProps } from './types';
 
 export function JBGridHeader(props: JBGridHeaderProps) {
   const {
+    moduleConfig,
+    iconNameRenderer,
+    breadcrumb,
     title,
     icon,
     searchText,
     onSearchTextChange,
-    searchPlaceholder = 'Search...',
+    searchPlaceholder,
     allowCreate = true,
-    createButtonLabel = 'Create',
+    createButtonLabel,
     onCreateClick,
     rightContent
   } = props;
+
+  const resolvedTitle = title ?? moduleConfig?.texts?.moduleName ?? '';
+  const resolvedSearchPlaceholder =
+    searchPlaceholder ?? moduleConfig?.texts?.searchPlaceholder ?? 'Search...';
+  const resolvedCreateLabel = createButtonLabel ?? moduleConfig?.texts?.newText ?? 'Create';
+  const resolvedIcon =
+    icon ?? (moduleConfig?.texts?.iconName && iconNameRenderer
+      ? iconNameRenderer(moduleConfig.texts.iconName)
+      : null);
 
   return (
     <Box
       sx={{
         display: 'flex',
-        flexDirection: { xs: 'column', sm: 'row' },
-        alignItems: { xs: 'stretch', sm: 'center' },
-        justifyContent: 'space-between',
+        flexDirection: 'column',
         gap: 2,
         p: 2
       }}>
+      {breadcrumb ? <Box>{breadcrumb}</Box> : null}
+
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'stretch', sm: 'center' },
+          justifyContent: 'space-between',
+          gap: 2
+        }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        {icon}
+        {resolvedIcon}
         <Typography
           variant="h5"
           sx={{ fontWeight: 700 }}>
-          {title}
+          {resolvedTitle}
         </Typography>
       </Box>
 
@@ -49,7 +69,7 @@ export function JBGridHeader(props: JBGridHeaderProps) {
           }}>
           <InputBase
             fullWidth
-            placeholder={searchPlaceholder}
+            placeholder={resolvedSearchPlaceholder}
             value={searchText}
             onChange={(event) => onSearchTextChange(event.target.value)}
           />
@@ -61,11 +81,11 @@ export function JBGridHeader(props: JBGridHeaderProps) {
           <Button
             variant="contained"
             onClick={onCreateClick}>
-            {createButtonLabel}
+            {resolvedCreateLabel}
           </Button>
         ) : null}
+      </Box>
       </Box>
     </Box>
   );
 }
-
