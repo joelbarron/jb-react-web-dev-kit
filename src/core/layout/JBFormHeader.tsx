@@ -1,8 +1,8 @@
-import { Box, Button, Typography } from '@mui/material';
-import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
+import { Box, Button, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
 import { JBFormHeaderProps } from '../../grid/types';
@@ -49,7 +49,7 @@ export function JBFormHeader(props: JBFormHeaderProps) {
     subtitle ??
     moduleConfig?.texts?.formHeaderSubtitle ??
     '';
-  const resolvedBackLabel = backLabel ?? moduleConfig?.texts?.goBackToGrid ?? 'Back';
+  const resolvedBackLabel = backLabel ?? moduleConfig?.texts?.goBackToGrid ?? 'Volver';
   const resolvedIcon =
     icon ??
     (moduleConfig?.texts?.iconName && iconNameRenderer

@@ -1,7 +1,12 @@
 import { ReactNode } from 'react';
 
 export type JBGridDefaults = {
-  pageSize: number;
+  pageSize?: number;
+  virtualScrolling?: boolean;
+  estimatedRowHeight?: number;
+  virtualTableHeight?: number;
+  virtualTableHeightMode?: 'fixed' | 'fill';
+  virtualTableHeightRatio?: number;
   allowSorting?: boolean;
   allowColumnResizing?: boolean;
   allowSelection?: boolean;
@@ -34,10 +39,11 @@ export type JBGridConfig = {
   imageColumns?: string[];
   booleanColumns?: string[];
   currencyColumns?: string[];
+  dateColumns?: string[];
   totalSummaryItems?: unknown[];
   groupSummaryItems?: unknown[];
   tableColumnExtensions?: unknown[];
-  defaults: JBGridDefaults;
+  defaults?: JBGridDefaults;
 };
 
 export type JBGridListResponse<TData> = {
@@ -72,12 +78,29 @@ export type JBGridProps<TData extends Record<string, unknown>> = {
   gridConfig: JBGridConfig;
   service?: JBGridService<TData>;
   rows?: TData[];
+  totalCount?: number;
+  loading?: boolean;
+  error?: ReactNode;
+  currentPage?: number;
+  onCurrentPageChange?: (page: number) => void;
+  pageSize?: number;
+  onPageSizeChange?: (pageSize: number) => void;
   searchText: string;
   onSearchTextChange: (text: string) => void;
   onRowSelected?: (row: TData) => void;
   loadData?: (args: JBGridLoadDataArgs<TData>) => void | Promise<void>;
   loadingComponent?: ReactNode;
+  emptyComponent?: ReactNode;
   getRowId?: (row: TData) => string | number;
+  paginationPosition?: 'top' | 'bottom' | 'both' | 'none';
+  stickyPagination?: boolean;
+  height?: number | string;
+  stickyHeader?: boolean;
+  infiniteScroll?: boolean;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  loadMoreThreshold?: number;
+  onLoadMore?: () => void;
 };
 
 export type JBModuleTextsConfig = {
@@ -112,8 +135,13 @@ export type JBModuleConfig = {
 export type JBGridHeaderProps = {
   moduleConfig?: JBModuleConfig;
   iconNameRenderer?: (iconName: string) => ReactNode;
+  animated?: boolean;
+  animationDurationMs?: number;
+  animationStaggerMs?: number;
+  animationPreset?: 'vertical' | 'sides';
   breadcrumb?: ReactNode;
   title?: string;
+  subtitle?: string;
   icon?: ReactNode;
   searchText: string;
   onSearchTextChange: (value: string) => void;

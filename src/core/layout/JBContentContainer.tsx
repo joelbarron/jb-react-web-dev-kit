@@ -10,7 +10,7 @@ export type JBContentContainerProps = {
   animationDurationMs?: number;
   padding?: number | string | { xs?: number | string; sm?: number | string; md?: number | string; lg?: number | string };
   contentPadding?: number | string | { xs?: number | string; sm?: number | string; md?: number | string; lg?: number | string };
-  borderRadius?: number;
+  // borderRadius?: number;
   withGradient?: boolean;
   paperSx?: SxProps<Theme>;
   headerSx?: SxProps<Theme>;
@@ -29,7 +29,7 @@ export function JBContentContainer(props: JBContentContainerProps) {
     animationDurationMs = 260,
     padding = defaultOuterPadding,
     contentPadding = defaultContentPadding,
-    borderRadius = 3,
+    // borderRadius = 3,
     withGradient = false,
     paperSx,
     headerSx,
@@ -60,8 +60,8 @@ export function JBContentContainer(props: JBContentContainerProps) {
             (theme) => ({
               position: 'relative',
               overflow: 'hidden',
-              borderRadius,
-              border: `1px solid ${theme.palette.divider}`,
+              // borderRadius,
+              // border: `1px solid ${theme.palette.divider}`,
               background: withGradient
                 ? `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.96)} 0%, ${alpha(theme.palette.background.default, 0.9)} 100%)`
                 : theme.palette.background.paper

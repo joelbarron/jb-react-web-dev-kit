@@ -20,6 +20,17 @@ const formatCurrency = (value: unknown, currency = 'USD') => {
   }).format(amount);
 };
 
+const formatDate = (value: unknown) => {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(String(value));
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat('es-MX', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(date);
+};
+
 const BooleanFormatter = ({ value }: FormatterProps): ReactNode => {
   return <span>{value ? 'Yes' : 'No'}</span>;
 };
@@ -27,6 +38,10 @@ const BooleanFormatter = ({ value }: FormatterProps): ReactNode => {
 const CurrencyFormatter = ({ value, column }: FormatterProps): ReactNode => {
   const currency = column?.currency ?? 'USD';
   return <span>{formatCurrency(value, currency)}</span>;
+};
+
+const DateFormatter = ({ value }: FormatterProps): ReactNode => {
+  return <span>{formatDate(value)}</span>;
 };
 
 const ImageFormatter = ({ value, column }: FormatterProps): ReactNode => {
@@ -71,10 +86,16 @@ export const JBCurrencyTypeProvider = (props: { for: string[] }) => (
   />
 );
 
+export const JBDateTypeProvider = (props: { for: string[] }) => (
+  <DataTypeProvider
+    formatterComponent={DateFormatter as never}
+    {...props}
+  />
+);
+
 export const JBImageTypeProvider = (props: { for: string[] }) => (
   <DataTypeProvider
     formatterComponent={ImageFormatter as never}
     {...props}
   />
 );
-

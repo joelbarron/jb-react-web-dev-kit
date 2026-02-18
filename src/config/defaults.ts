@@ -4,7 +4,7 @@ export const defaultJBAppConfig: JBAppConfig = {
   debug: false,
   forceHideStage: false,
   stage: 'DEVELOPMENT',
-  defaultRows: 10,
+  defaultRows: 30,
   maxRows: 999999999,
   momentLocale: 'es-mx',
   defaultLocaleDate: 'es',

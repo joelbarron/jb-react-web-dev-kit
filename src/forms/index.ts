@@ -1,6 +1,7 @@
 export * from './types';
 export * from './utils';
 export * from './rules';
+export * from './zod';
 export * from './JBTextField';
 export * from './JBSelectField';
 export * from './JBCheckboxField';
