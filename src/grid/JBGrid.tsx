@@ -51,6 +51,8 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
     rows: controlledRows,
     totalCount: controlledTotalCount,
     loading: controlledLoading,
+    isFetching = false,
+    fetchingLabel = 'Actualizando...',
     currentPage: controlledCurrentPage,
     onCurrentPageChange,
     pageSize: controlledPageSize,
@@ -203,6 +205,7 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
   const showTopPagination = paginationPosition === 'top' || paginationPosition === 'both';
   const showBottomPagination = paginationPosition === 'bottom' || paginationPosition === 'both';
   const showPaging = paginationPosition !== 'none';
+  const showFetchingIndicator = isFetching && !loading;
   const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const nextPageSize = Number.parseInt(event.target.value, 10);
     handlePageSizeChange(nextPageSize);
@@ -379,7 +382,8 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
             <Box
               sx={{
                 display: 'flex',
-                justifyContent: 'flex-end',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 px: 1,
                 ...(stickyPagination
                   ? {
@@ -392,6 +396,23 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
                     }
                   : undefined)
               }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  minHeight: 40
+                }}
+              >
+                {showFetchingIndicator ? (
+                  <>
+                    <CircularProgress size={16} color="secondary" />
+                    <Typography variant="body2" color="text.secondary">
+                      {fetchingLabel}
+                    </Typography>
+                  </>
+                ) : null}
+              </Box>
               <TablePagination
                 component="div"
                 count={totalCount}

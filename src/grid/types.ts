@@ -80,6 +80,8 @@ export type JBGridProps<TData extends Record<string, unknown>> = {
   rows?: TData[];
   totalCount?: number;
   loading?: boolean;
+  isFetching?: boolean;
+  fetchingLabel?: string;
   error?: ReactNode;
   currentPage?: number;
   onCurrentPageChange?: (page: number) => void;
