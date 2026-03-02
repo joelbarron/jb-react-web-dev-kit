@@ -19,6 +19,7 @@ export const DEFAULT_GRID_DEFAULTS: Required<JBGridDefaults> = {
   sorting: [],
   grouping: [],
   expandedGroups: [],
+  expandGroupedRowsByDefault: false,
   pageSizes: [10, 30, 50, 100, 200, 500, 1000]
 };
 

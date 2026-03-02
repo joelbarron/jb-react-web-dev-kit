@@ -1,10 +1,11 @@
 import { Box, Paper, SxProps, Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { ReactNode } from 'react';
+import { KeyboardEventHandler, ReactNode } from 'react';
 
 export type JBContentContainerProps = {
   children: ReactNode;
   header?: ReactNode;
+  onKeyDown?: KeyboardEventHandler<HTMLDivElement>;
   animated?: boolean;
   animationDelayMs?: number;
   animationDurationMs?: number;
@@ -24,6 +25,7 @@ export function JBContentContainer(props: JBContentContainerProps) {
   const {
     children,
     header,
+    onKeyDown,
     animated = true,
     animationDelayMs = 0,
     animationDurationMs = 260,
@@ -40,6 +42,7 @@ export function JBContentContainer(props: JBContentContainerProps) {
     <Box
       className="w-full h-full"
       sx={{ p: padding }}
+      onKeyDown={onKeyDown}
     >
       <Box
         sx={
@@ -99,4 +102,3 @@ export function JBContentContainer(props: JBContentContainerProps) {
     </Box>
   );
 }
-

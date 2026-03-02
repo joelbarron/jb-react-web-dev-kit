@@ -92,16 +92,76 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
   const [internalLoading, setInternalLoading] = useState(false);
   const [lastQuery, setLastQuery] = useState('');
   const [selection, setSelection] = useState<Array<string | number>>([]);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(defaults.expandedGroups);
 
   const currentPage = isControlledPaging ? (controlledCurrentPage as number) : internalCurrentPage;
   const pageSize = isControlledPaging ? (controlledPageSize as number) : internalPageSize;
   const loading = controlledLoading ?? internalLoading;
+  const groupingColumnNames = useMemo(
+    () =>
+      (defaults.grouping ?? [])
+        .map((grouping) => grouping?.columnName)
+        .filter((name): name is string => typeof name === 'string' && name.length > 0),
+    [defaults.grouping]
+  );
+
+  const expandedGroupsFromRows = useMemo(() => {
+    if (!defaults.expandGroupedRowsByDefault || groupingColumnNames.length === 0 || rows.length === 0) {
+      return [];
+    }
+
+    const columnsByName = new Map(gridConfig.columns.map((column) => [column.name, column]));
+    const allGroupKeys = new Set<string>();
+
+    rows.forEach((row) => {
+      let currentPath = '';
+      groupingColumnNames.forEach((columnName) => {
+        const column = columnsByName.get(columnName);
+        const valueFromGetter =
+          typeof column?.getCellValue === 'function' ? column.getCellValue(row) : row[columnName];
+        const value = valueFromGetter === undefined || valueFromGetter === null || valueFromGetter === ''
+          ? '-'
+          : String(valueFromGetter);
+
+        currentPath = currentPath ? `${currentPath}|${value}` : value;
+        allGroupKeys.add(currentPath);
+      });
+    });
+
+    return Array.from(allGroupKeys);
+  }, [defaults.expandGroupedRowsByDefault, gridConfig.columns, groupingColumnNames, rows]);
 
   useEffect(() => {
     if (controlledRows) {
       setRows(controlledRows);
     }
   }, [controlledRows]);
+
+  useEffect(() => {
+    if (defaults.allowGrouping === false) {
+      setExpandedGroups([]);
+      return;
+    }
+
+    const nextExpandedGroups = defaults.expandGroupedRowsByDefault
+      ? expandedGroupsFromRows
+      : defaults.expandedGroups;
+
+    setExpandedGroups((previous) => {
+      if (
+        previous.length === nextExpandedGroups.length &&
+        previous.every((value, index) => value === nextExpandedGroups[index])
+      ) {
+        return previous;
+      }
+      return nextExpandedGroups;
+    });
+  }, [
+    defaults.allowGrouping,
+    defaults.expandGroupedRowsByDefault,
+    defaults.expandedGroups,
+    expandedGroupsFromRows
+  ]);
 
   useEffect(() => {
     if (controlledTotalCount !== undefined) {
@@ -442,7 +502,10 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
 
           <GroupingState
             defaultGrouping={defaults.grouping as never}
-            defaultExpandedGroups={defaults.expandedGroups as never}
+            expandedGroups={expandedGroups as never}
+            onExpandedGroupsChange={(nextExpandedGroups) =>
+              setExpandedGroups((nextExpandedGroups as string[]) ?? [])
+            }
           />
 
           <SummaryState

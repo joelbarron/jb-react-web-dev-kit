@@ -4,6 +4,7 @@ export * from './rules';
 export * from './zod';
 export * from './JBTextField';
 export * from './JBSelectField';
+export * from './JBAutocompleteField';
 export * from './JBCheckboxField';
 export * from './JBSwitchField';
 export * from './JBRadioGroupField';

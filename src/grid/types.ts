@@ -17,9 +17,14 @@ export type JBGridDefaults = {
   allowGrouping?: boolean;
   filters?: unknown[];
   sorting?: unknown[];
-  grouping?: unknown[];
-  expandedGroups?: unknown[];
+  grouping?: JBGridGrouping[];
+  expandedGroups?: string[];
+  expandGroupedRowsByDefault?: boolean;
   pageSizes?: number[];
+};
+
+export type JBGridGrouping = {
+  columnName: string;
 };
 
 export type JBGridColumn = {
@@ -114,6 +119,7 @@ export type JBModuleTextsConfig = {
   goBackOnItemNotFoundText?: string;
   goBackToGrid?: string;
   formHeaderSubtitle?: string;
+  formHeaderRecordPrefix?: string;
 };
 
 export type JBModuleUrlsConfig = {
@@ -167,6 +173,7 @@ export type JBFormHeaderProps = {
   onBackClick?: () => void;
   backContent?: ReactNode;
   isNew?: boolean;
+  recordId?: string | number;
   title?: string;
   dynamicTitle?: string;
   formValues?: Record<string, unknown>;

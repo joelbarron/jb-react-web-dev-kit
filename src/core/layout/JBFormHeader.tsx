@@ -1,10 +1,7 @@
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
+import { JBButton } from '../buttons';
 import { JBFormHeaderProps } from '../../grid/types';
 
 export function JBFormHeader(props: JBFormHeaderProps) {
@@ -21,6 +18,7 @@ export function JBFormHeader(props: JBFormHeaderProps) {
     onBackClick,
     backContent,
     isNew = false,
+    recordId,
     title,
     dynamicTitle,
     formValues,
@@ -35,32 +33,45 @@ export function JBFormHeader(props: JBFormHeaderProps) {
 
   const dynamicTitleFromResolver = getDynamicTitle?.({ isNew, values: formValues });
   const dynamicSubtitleFromResolver = getDynamicSubtitle?.({ isNew, values: formValues });
+  const resolvedDynamicTitle = (!isNew ? dynamicTitle : undefined) ?? dynamicTitleFromResolver;
 
-  const resolvedTitle =
-    (!isNew ? dynamicTitle : undefined) ??
-    dynamicTitleFromResolver ??
+  const moduleTitle =
     title ??
     (isNew ? moduleConfig?.texts?.newText : moduleConfig?.texts?.editText) ??
     moduleConfig?.texts?.moduleName ??
     '';
-  const resolvedSubtitle =
+  const hasStaticTitle = Boolean(moduleTitle);
+  const dynamicSubtitleCandidate =
     dynamicSubtitle ??
     dynamicSubtitleFromResolver ??
+    (hasStaticTitle ? resolvedDynamicTitle : undefined);
+  const staticSubtitleCandidate =
     subtitle ??
     moduleConfig?.texts?.formHeaderSubtitle ??
     '';
+  const baseSubtitle = dynamicSubtitleCandidate ?? staticSubtitleCandidate;
+  const recordPrefix = moduleConfig?.texts?.formHeaderRecordPrefix;
+  const canApplyRecordPrefix =
+    !isNew &&
+    Boolean(recordPrefix) &&
+    recordId !== undefined &&
+    recordId !== null &&
+    String(recordId).trim() !== '' &&
+    Boolean(dynamicSubtitleCandidate);
+  const resolvedTitle =
+    (hasStaticTitle ? moduleTitle : undefined) ||
+    resolvedDynamicTitle ||
+    '';
+  const resolvedSubtitle =
+    canApplyRecordPrefix
+      ? [`${recordPrefix}-${recordId}`, baseSubtitle].filter(Boolean).join(' / ')
+      : baseSubtitle;
   const resolvedBackLabel = backLabel ?? moduleConfig?.texts?.goBackToGrid ?? 'Volver';
   const resolvedIcon =
     icon ??
     (moduleConfig?.texts?.iconName && iconNameRenderer
       ? iconNameRenderer(moduleConfig.texts.iconName)
       : null);
-  const defaultActionIcons = {
-    save: <SaveRoundedIcon fontSize="small" />,
-    cancel: <CloseRoundedIcon fontSize="small" />,
-    edit: <EditRoundedIcon fontSize="small" />,
-    delete: <DeleteRoundedIcon fontSize="small" />
-  };
   const formDisabled = actions?.formDisabled ?? false;
   const allowEdit = actions?.allowEdit ?? false;
   const allowDelete = actions?.allowDelete ?? false;
@@ -76,92 +87,49 @@ export function JBFormHeader(props: JBFormHeaderProps) {
         width: { xs: '100%', sm: 'auto' }
       }}>
       {!isNew && allowEdit && formDisabled && actions.onStartEdit ? (
-        <Button
-          variant="contained"
-          color="warning"
+        <JBButton
+          action="edit"
           size="large"
           disabled={actions.disableEdit}
-          startIcon={actions.editIcon ?? defaultActionIcons.edit}
-          sx={(theme) => ({
-            borderRadius: 1.5,
-            minHeight: 42,
-            px: 2.25,
-            fontWeight: 700,
-            boxShadow: 'none',
-            backgroundImage: 'none',
-            '&:hover': {
-              boxShadow: 'none',
-              backgroundImage: 'none',
-              backgroundColor: theme.palette.warning.dark
-            }
-          })}
+          startIcon={actions.editIcon}
           onClick={actions.onStartEdit}>
           {actions.editLabel ?? 'Editar'}
-        </Button>
+        </JBButton>
       ) : null}
 
       {(isNew || !formDisabled) && actions.onCancel ? (
-        <Button
-          variant="outlined"
+        <JBButton
+          action="cancel"
           size="large"
           disabled={actions.disableCancel}
-          startIcon={actions.cancelIcon ?? defaultActionIcons.cancel}
-          sx={{ borderRadius: 1.5, minHeight: 42, px: 2.25, fontWeight: 700 }}
+          startIcon={actions.cancelIcon}
           onClick={actions.onCancel}>
           {actions.cancelLabel ?? 'Cancelar'}
-        </Button>
+        </JBButton>
       ) : null}
 
       {(isNew || !formDisabled) && actions.onSave ? (
-        <Button
-          variant="contained"
-          color="primary"
+        <JBButton
+          action="save"
           size="large"
           disabled={actions.disableSave}
-          startIcon={actions.saveIcon ?? defaultActionIcons.save}
-          sx={(theme) => ({
-            borderRadius: 1.5,
-            minHeight: 42,
-            px: 2.25,
-            fontWeight: 700,
-            boxShadow: 'none',
-            backgroundImage: 'none',
-            '&:hover': {
-              boxShadow: 'none',
-              backgroundImage: 'none',
-              backgroundColor: theme.palette.primary.dark
-            }
-          })}
+          startIcon={actions.saveIcon}
           onClick={actions.onSave}>
           {actions.saveLabel ?? (isNew ? 'Guardar' : 'Guardar cambios')}
-        </Button>
+        </JBButton>
       ) : null}
 
       {allowDelete &&
       actions.onDelete &&
       (formDisabled || showDeleteWhenEditing) ? (
-        <Button
-          variant="contained"
-          color="error"
+        <JBButton
+          action="delete"
           size="large"
           disabled={actions.disableDelete}
-          startIcon={actions.deleteIcon ?? defaultActionIcons.delete}
-          sx={(theme) => ({
-            borderRadius: 1.5,
-            minHeight: 42,
-            px: 2.25,
-            fontWeight: 700,
-            boxShadow: 'none',
-            backgroundImage: 'none',
-            '&:hover': {
-              boxShadow: 'none',
-              backgroundImage: 'none',
-              backgroundColor: theme.palette.error.dark
-            }
-          })}
+          startIcon={actions.deleteIcon}
           onClick={actions.onDelete}>
           {actions.deleteLabel ?? 'Eliminar'}
-        </Button>
+        </JBButton>
       ) : null}
     </Box>
   ) : null;
@@ -251,17 +219,17 @@ export function JBFormHeader(props: JBFormHeaderProps) {
           {resolvedIcon ? <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>{resolvedIcon}</Box> : null}
           <Box sx={{ minWidth: 0 }}>
             <Typography
-              variant="h4"
+              variant="h5"
               sx={{ fontWeight: 700, lineHeight: 1.15 }}>
               {resolvedTitle}
             </Typography>
             {resolvedSubtitle ? (
               <Typography
-                variant="h6"
+                variant="body2"
                 sx={(theme) => ({
                   mt: 0.4,
-                  fontWeight: 600,
-                  lineHeight: 1.2,
+                  fontWeight: 500,
+                  lineHeight: 1.1,
                   color:
                     theme.palette.mode === 'dark'
                       ? alpha(theme.palette.common.white, 0.9)
