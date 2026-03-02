@@ -5,6 +5,9 @@ import { KeyboardEventHandler, ReactNode } from 'react';
 export type JBContentContainerProps = {
   children: ReactNode;
   header?: ReactNode;
+  stickyHeader?: boolean;
+  stickyHeaderTop?: number | string;
+  stickyHeaderZIndex?: number;
   onKeyDown?: KeyboardEventHandler<HTMLDivElement>;
   animated?: boolean;
   animationDelayMs?: number;
@@ -25,6 +28,9 @@ export function JBContentContainer(props: JBContentContainerProps) {
   const {
     children,
     header,
+    stickyHeader = false,
+    stickyHeaderTop = 0,
+    stickyHeaderZIndex = 2,
     onKeyDown,
     animated = true,
     animationDelayMs = 0,
@@ -62,7 +68,7 @@ export function JBContentContainer(props: JBContentContainerProps) {
           sx={[
             (theme) => ({
               position: 'relative',
-              overflow: 'hidden',
+              overflow: stickyHeader ? 'visible' : 'hidden',
               // borderRadius,
               // border: `1px solid ${theme.palette.divider}`,
               background: withGradient
@@ -80,7 +86,15 @@ export function JBContentContainer(props: JBContentContainerProps) {
                   pt: { xs: 2, sm: 2.5 },
                   pb: 0.75,
                   borderBottom: '1px solid',
-                  borderColor: 'divider'
+                  borderColor: 'divider',
+                  ...(stickyHeader
+                    ? {
+                        position: 'sticky',
+                        top: stickyHeaderTop,
+                        zIndex: stickyHeaderZIndex,
+                        bgcolor: 'background.paper'
+                      }
+                    : {})
                 },
                 ...(Array.isArray(headerSx) ? headerSx : headerSx ? [headerSx] : [])
               ]}

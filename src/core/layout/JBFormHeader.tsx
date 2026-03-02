@@ -83,8 +83,9 @@ export function JBFormHeader(props: JBFormHeaderProps) {
         display: 'flex',
         gap: 1,
         flexWrap: 'wrap',
-        justifyContent: 'flex-end',
-        width: { xs: '100%', sm: 'auto' }
+        justifyContent: { xs: 'center', md: 'flex-end' },
+        alignItems: 'center',
+        width: { xs: '100%', md: 'auto' }
       }}>
       {!isNew && allowEdit && formDisabled && actions.onStartEdit ? (
         <JBButton
@@ -186,8 +187,9 @@ export function JBFormHeader(props: JBFormHeaderProps) {
             alignItems: 'center',
             gap: 0.75,
             width: 'fit-content',
+            alignSelf: { xs: 'center', md: 'flex-start' },
             fontWeight: 500,
-            fontSize: { xs: '0.95rem', sm: '1rem' },
+            fontSize: { xs: '0.95rem', md: '1rem' },
             cursor: 'pointer',
             opacity: 0.9,
             transition: 'all .16s ease',
@@ -201,10 +203,10 @@ export function JBFormHeader(props: JBFormHeaderProps) {
 
       <Box
         sx={{
-          display: { xs: 'flex', sm: 'grid' },
-          flexDirection: { xs: 'column', sm: 'row' },
-          gridTemplateColumns: { sm: 'minmax(0, 1fr) auto' },
-          alignItems: { xs: 'stretch', sm: 'center' },
+          display: { xs: 'flex', md: 'grid' },
+          flexDirection: { xs: 'column', md: 'row' },
+          gridTemplateColumns: { md: 'minmax(0, 1fr) auto' },
+          alignItems: { xs: 'center', md: 'center' },
           width: '100%',
           gap: 2
         }}>
@@ -212,12 +214,14 @@ export function JBFormHeader(props: JBFormHeaderProps) {
           sx={{
             display: 'flex',
             alignItems: 'center',
+            justifyContent: { xs: 'center', md: 'flex-start' },
             gap: 1.25,
             minWidth: 0,
+            width: '100%',
             ...animateFromLeftSx(animationStaggerMs * 3)
           }}>
           {resolvedIcon ? <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>{resolvedIcon}</Box> : null}
-          <Box sx={{ minWidth: 0 }}>
+          <Box sx={{ minWidth: 0, textAlign: { xs: 'center', md: 'left' } }}>
             <Typography
               variant="h5"
               sx={{ fontWeight: 700, lineHeight: 1.15 }}>
@@ -243,10 +247,11 @@ export function JBFormHeader(props: JBFormHeaderProps) {
 
         <Box
           sx={{
-            width: { xs: '100%', sm: 'auto' },
+            width: { xs: '100%', md: 'auto' },
             display: 'flex',
-            justifySelf: { sm: 'end' },
-            justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+            justifySelf: { md: 'end' },
+            justifyContent: { xs: 'center', md: 'flex-end' },
+            alignItems: 'center',
             ...animateFromRightSx(animationStaggerMs * 4)
           }}>
           {resolvedRightContent}

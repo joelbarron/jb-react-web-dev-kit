@@ -60,7 +60,7 @@ export function JBGridHeader(props: JBGridHeaderProps) {
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
-        p: { xs: 2, sm: 3 },
+        p: { xs: 2, md: 3 },
         '@keyframes jbGridHeaderFadeIn': {
           from: { opacity: 0, transform: 'translateY(8px)' },
           to: { opacity: 1, transform: 'translateY(0)' }
@@ -78,10 +78,10 @@ export function JBGridHeader(props: JBGridHeaderProps) {
 
       <Box
         sx={{
-          display: { xs: 'flex', sm: 'grid' },
-          flexDirection: { xs: 'column', sm: 'row' },
-          gridTemplateColumns: { sm: 'minmax(0, 1fr) auto' },
-          alignItems: { xs: 'stretch', sm: 'center' },
+          display: { xs: 'flex', md: 'grid' },
+          flexDirection: { xs: 'column', md: 'row' },
+          gridTemplateColumns: { md: 'minmax(0, 1fr) auto' },
+          alignItems: { xs: 'center', md: 'center' },
           gap: 2,
           width: '100%'
         }}>
@@ -89,12 +89,14 @@ export function JBGridHeader(props: JBGridHeaderProps) {
         sx={{
           display: 'flex',
           alignItems: 'center',
+          justifyContent: { xs: 'center', md: 'flex-start' },
           gap: 1,
           minWidth: 0,
+          width: '100%',
           ...animateFromLeftSx(animationStaggerMs)
         }}>
         {resolvedIcon ? <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>{resolvedIcon}</Box> : null}
-        <Box sx={{ minWidth: 0 }}>
+        <Box sx={{ minWidth: 0, textAlign: { xs: 'center', md: 'left' } }}>
           <Typography
             variant="h4"
             sx={{ fontWeight: 700, lineHeight: 1.15 }}>
@@ -112,11 +114,11 @@ export function JBGridHeader(props: JBGridHeaderProps) {
 
       <Box
         sx={{
-          width: { xs: '100%', sm: 'auto' },
+          width: { xs: '100%', md: 'auto' },
           display: 'flex',
-          alignItems: { xs: 'stretch', sm: 'center' },
-          justifySelf: { sm: 'end' },
-          justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+          alignItems: { xs: 'center', md: 'center' },
+          justifySelf: { md: 'end' },
+          justifyContent: { xs: 'center', md: 'flex-end' },
           flexWrap: 'wrap',
           gap: 1,
           minWidth: 0,
@@ -126,7 +128,7 @@ export function JBGridHeader(props: JBGridHeaderProps) {
           sx={{
             px: 1.5,
             py: 0.5,
-            width: { xs: '100%', sm: 320 },
+            width: { xs: '100%', md: 320 },
             display: 'flex',
             alignItems: 'center',
             gap: 1,
