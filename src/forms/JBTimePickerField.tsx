@@ -1,5 +1,6 @@
 import { TextFieldProps } from '@mui/material';
-import { TimePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import { ComponentProps } from 'react';
 import { Controller, FieldValues, Path } from 'react-hook-form';
 
@@ -29,19 +30,21 @@ export function JBTimePickerField<
       name={name}
       rules={rules}
       render={({ field, fieldState }) => (
-        <TimePicker
-          {...timePickerProps}
-          value={field.value ?? null}
-          onChange={(value) => field.onChange(value)}
-          slotProps={{
-            textField: {
-              ...resolvedTextFieldProps,
-              size,
-              error: !!fieldState.error,
-              helperText: getJBFieldErrorMessage(fieldState.error) ?? resolvedTextFieldProps.helperText
-            }
-          }}
-        />
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <TimePicker
+            {...timePickerProps}
+            value={field.value ?? null}
+            onChange={(value) => field.onChange(value)}
+            slotProps={{
+              textField: {
+                ...resolvedTextFieldProps,
+                size,
+                error: !!fieldState.error,
+                helperText: getJBFieldErrorMessage(fieldState.error) ?? resolvedTextFieldProps.helperText
+              }
+            }}
+          />
+        </LocalizationProvider>
       )}
     />
   );

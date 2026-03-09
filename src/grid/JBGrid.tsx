@@ -19,6 +19,7 @@ import {
   GroupingPanel,
   PagingPanel,
   Table,
+  TableColumnReordering,
   TableColumnResizing,
   TableFilterRow,
   TableGroupRow,
@@ -93,6 +94,7 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
   const [lastQuery, setLastQuery] = useState('');
   const [selection, setSelection] = useState<Array<string | number>>([]);
   const [expandedGroups, setExpandedGroups] = useState<string[]>(defaults.expandedGroups);
+  const [columnOrder, setColumnOrder] = useState<string[]>(gridConfig.columns.map((column) => column.name));
 
   const currentPage = isControlledPaging ? (controlledCurrentPage as number) : internalCurrentPage;
   const pageSize = isControlledPaging ? (controlledPageSize as number) : internalPageSize;
@@ -162,6 +164,11 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
     defaults.expandedGroups,
     expandedGroupsFromRows
   ]);
+
+  useEffect(() => {
+    const defaultOrder = gridConfig.columns.map((column) => column.name);
+    setColumnOrder(defaultOrder);
+  }, [gridConfig.columns]);
 
   useEffect(() => {
     if (controlledTotalCount !== undefined) {
@@ -551,6 +558,13 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
             ) : (
               <Table columnExtensions={gridConfig.tableColumnExtensions as never} />
             )}
+
+          {defaults.allowColumnReordering ? (
+            <TableColumnReordering
+              order={columnOrder}
+              onOrderChange={(nextOrder) => setColumnOrder(Array.isArray(nextOrder) ? nextOrder : [])}
+            />
+          ) : null}
 
           {defaults.allowColumnResizing !== false ? (
             <TableColumnResizing defaultColumnWidths={gridConfig.columnsWidths} />

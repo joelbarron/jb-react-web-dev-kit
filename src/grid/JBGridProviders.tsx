@@ -1,5 +1,7 @@
 import { DataTypeProvider } from '@devexpress/dx-react-grid';
-import { Avatar, Box } from '@mui/material';
+import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import { Avatar, Box, Chip } from '@mui/material';
 import { ReactNode } from 'react';
 
 type FormatterProps = {
@@ -32,7 +34,22 @@ const formatDate = (value: unknown) => {
 };
 
 const BooleanFormatter = ({ value }: FormatterProps): ReactNode => {
-  return <span>{value ? 'Yes' : 'No'}</span>;
+  const normalized = String(value ?? '').trim().toLowerCase();
+  const isTrue =
+    value === true ||
+    value === 1 ||
+    value === '1' ||
+    normalized === 'true';
+
+  return (
+    <Chip
+      size="small"
+      variant="outlined"
+      color={isTrue ? 'success' : 'error'}
+      icon={isTrue ? <CheckCircleRoundedIcon fontSize="small" /> : <CancelRoundedIcon fontSize="small" />}
+      label={isTrue ? 'Sí' : 'No'}
+    />
+  );
 };
 
 const CurrencyFormatter = ({ value, column }: FormatterProps): ReactNode => {

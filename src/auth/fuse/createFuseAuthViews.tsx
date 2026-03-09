@@ -654,27 +654,6 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
       };
     }, [magicLinkToken, searchParams, setSearchParams, signInMagicLink]);
 
-    if (magicLinkToken && magicLinkState === "loading") {
-      return (
-        <Box
-          sx={{
-            mx: { xs: "auto", sm: 0 },
-            width: { xs: "100%", sm: 320 },
-            maxWidth: 320,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            alignItems: "center"
-          }}
-        >
-          <AuthPageTitle title="Accediendo..." />
-          <Typography sx={{ fontSize: 16, textAlign: "center" }} color="text.secondary">
-            Validando liga de acceso segura.
-          </Typography>
-        </Box>
-      );
-    }
-
     const onSocialClick = useCallback(
       async (provider: SocialProvider) => {
         const providerConfig = enabledSocialProviders.find((item) => item.provider === provider);
@@ -732,6 +711,27 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
       },
       [enabledSocialProviders, hasRoleOptions, requestRoleSelection, showDebugSocial, signInSocial, signInSocialPrecheck]
     );
+
+    if (magicLinkToken && magicLinkState === "loading") {
+      return (
+        <Box
+          sx={{
+            mx: { xs: "auto", sm: 0 },
+            width: { xs: "100%", sm: 320 },
+            maxWidth: 320,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            alignItems: "center"
+          }}
+        >
+          <AuthPageTitle title="Accediendo..." />
+          <Typography sx={{ fontSize: 16, textAlign: "center" }} color="text.secondary">
+            Validando liga de acceso segura.
+          </Typography>
+        </Box>
+      );
+    }
 
     return (
       <Box

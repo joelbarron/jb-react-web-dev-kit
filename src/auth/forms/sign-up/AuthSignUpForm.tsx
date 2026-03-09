@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
-import { JBCheckboxField, JBSelectField, JBTextField, SelectOption } from '../../../forms';
+import { JBCheckboxField, JBDatePickerField, JBSelectField, JBTextField, SelectOption } from '../../../forms';
 import { DEFAULT_GENDER, GENDERS, GENDER_SELECT_OPTIONS } from '../../constants';
 import { RegisterPayload } from '../../types';
 import { AuthPrimaryButton } from '../../ui';
@@ -277,15 +277,17 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           disabled={disabled}
         />
 
-        <JBTextField
+        <JBDatePickerField
           control={control}
           name="birthday"
           sx={{ mb: 3 }}
           label="Fecha de nacimiento"
-          type="date"
-          InputLabelProps={{ shrink: true }}
-          variant="outlined"
-          fullWidth
+          disableFuture
+          storeAsDateString
+          textFieldProps={{
+            variant: 'outlined',
+            fullWidth: true
+          }}
           disabled={disabled}
         />
 

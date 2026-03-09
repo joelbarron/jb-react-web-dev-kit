@@ -9,6 +9,7 @@ export const DEFAULT_GRID_DEFAULTS: Required<JBGridDefaults> = {
   virtualTableHeightRatio: 1,
   allowSorting: true,
   allowColumnResizing: true,
+  allowColumnReordering: false,
   allowSelection: true,
   allowSelectAll: false,
   showSelectionColumn: false,

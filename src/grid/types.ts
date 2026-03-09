@@ -9,6 +9,7 @@ export type JBGridDefaults = {
   virtualTableHeightRatio?: number;
   allowSorting?: boolean;
   allowColumnResizing?: boolean;
+  allowColumnReordering?: boolean;
   allowSelection?: boolean;
   allowSelectAll?: boolean;
   showSelectionColumn?: boolean;
