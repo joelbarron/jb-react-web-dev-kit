@@ -16,6 +16,7 @@ import {
   JbDrfWebAuthResponse,
   LinkSocialPayload,
   LoginBasicPayload,
+  MagicLinkConsumePayload,
   LoginSocialPrecheckResponse,
   LoginSocialPayload,
   PasswordChangePayload,
@@ -51,6 +52,7 @@ export const createAuthEndpoints = (basePath?: string): JbDrfAuthEndpoints => {
     loginSocialPrecheck: `${root}/login/social/precheck/`,
     loginSocialLink: `${root}/login/social/link/`,
     loginSocialUnlink: `${root}/login/social/unlink/`,
+    loginMagicLinkConsume: `${root}/login/magic-link/consume/`,
     loginOtpVerify: `${root}/otp/verify/`,
     otpRequest: `${root}/otp/request/`,
     register: `${root}/register/`,
@@ -89,6 +91,7 @@ export type AuthClient = {
   unlinkSocial: (payload: UnlinkSocialPayload) => Promise<Record<string, unknown>>;
   requestOtp: (payload: RequestOtpPayload) => Promise<Record<string, unknown>>;
   verifyOtp: (payload: VerifyOtpPayload) => Promise<JbDrfWebAuthResponse>;
+  consumeMagicLink: (payload: MagicLinkConsumePayload) => Promise<JbDrfWebAuthResponse>;
   register: (payload: RegisterPayload) => Promise<ApiDetailResponse>;
   confirmAccountEmail: (payload: AccountConfirmationPayload) => Promise<ApiDetailResponse>;
   resendAccountConfirmation: (payload: AccountConfirmationResendPayload) => Promise<ApiDetailResponse>;
@@ -358,6 +361,20 @@ export const createAuthClient = (config: JbDrfAuthConfig): AuthClient => {
     return response.data;
   };
 
+  const consumeMagicLink = async (payload: MagicLinkConsumePayload): Promise<JbDrfWebAuthResponse> => {
+    const response = await createPublicAxios().post<JbDrfWebAuthResponse>(
+      withBaseUrl(endpoints.loginMagicLinkConsume),
+      withClientPayload(payload, defaultClient)
+    );
+    const accessToken = response.data.tokens?.accessToken;
+    const refreshTokenValue = response.data.tokens?.refreshToken;
+    if (accessToken) {
+      setAccessToken(accessToken);
+    }
+    saveRefreshToken(refreshTokenValue);
+    return response.data;
+  };
+
   const register = async (payload: RegisterPayload): Promise<ApiDetailResponse> => {
     const response = await createPublicAxios().post<Record<string, unknown>>(
       withBaseUrl(endpoints.register),
@@ -582,6 +599,7 @@ export const createAuthClient = (config: JbDrfAuthConfig): AuthClient => {
     unlinkSocial,
     requestOtp,
     verifyOtp,
+    consumeMagicLink,
     register,
     confirmAccountEmail,
     resendAccountConfirmation,

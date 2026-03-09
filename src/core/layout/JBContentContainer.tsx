@@ -28,7 +28,7 @@ export function JBContentContainer(props: JBContentContainerProps) {
   const {
     children,
     header,
-    stickyHeader = false,
+    stickyHeader = true,
     stickyHeaderTop = 0,
     stickyHeaderZIndex = 2,
     onKeyDown,

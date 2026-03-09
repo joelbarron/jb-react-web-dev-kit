@@ -15,6 +15,7 @@ import {
   AccountConfirmationResendPayload,
   LoginSocialPrecheckResponse,
   LoginSocialPayload,
+  MagicLinkConsumePayload,
   PasswordChangePayload,
   PasswordResetConfirmPayload,
   PasswordResetRequestPayload,
@@ -37,6 +38,7 @@ export type FuseJwtAuthContextType<TUser = JsonRecord> = FuseAuthState<TUser> & 
   signInSocialPrecheck: (payload: LoginSocialPayload) => Promise<LoginSocialPrecheckResponse>;
   requestOtp: (payload: RequestOtpPayload) => Promise<Record<string, unknown>>;
   signInOtp: (payload: VerifyOtpPayload) => Promise<JsonRecord>;
+  signInMagicLink: (payload: MagicLinkConsumePayload) => Promise<JsonRecord>;
   signUp: (payload: RegisterPayload) => Promise<JsonRecord>;
   confirmAccountEmail: (payload: AccountConfirmationPayload) => Promise<Record<string, unknown>>;
   resendAccountConfirmation: (payload: AccountConfirmationResendPayload) => Promise<Record<string, unknown>>;
@@ -287,6 +289,27 @@ export const createFuseJwtAuthProvider = (authClient: AuthClient) => {
       };
     }, []);
 
+    const signInMagicLink: FuseJwtAuthContextType['signInMagicLink'] = useCallback(async (payload) => {
+      const session = normalizeSession(
+        await authClient.consumeMagicLink({
+          ...payload,
+          client: payload.client ?? 'web'
+        })
+      );
+      setAuthState({
+        authStatus: 'authenticated',
+        isAuthenticated: true,
+        user: session.user
+      });
+      return {
+        user: session.user,
+        accessToken: session.accessToken,
+        refreshToken: session.refreshToken,
+        access_token: session.accessToken,
+        refresh_token: session.refreshToken
+      };
+    }, []);
+
     const signUp: FuseJwtAuthContextType['signUp'] = useCallback(async (payload) => {
       const response = await authClient.register(payload);
       return response as JsonRecord;
@@ -354,6 +377,7 @@ export const createFuseJwtAuthProvider = (authClient: AuthClient) => {
         signInSocialPrecheck,
         requestOtp,
         signInOtp,
+        signInMagicLink,
         signUp,
         confirmAccountEmail,
         resendAccountConfirmation,
@@ -372,6 +396,7 @@ export const createFuseJwtAuthProvider = (authClient: AuthClient) => {
         signInSocialPrecheck,
         requestOtp,
         signInOtp,
+        signInMagicLink,
         signUp,
         confirmAccountEmail,
         resendAccountConfirmation,

@@ -4,7 +4,7 @@ import PersonAddAlt1OutlinedIcon from '@mui/icons-material/PersonAddAlt1Outlined
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { JBAuthProfileRoleOption, JBAuthSocialConfig } from "../../config";
@@ -592,9 +592,13 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
 
   function SignInPageView() {
     const [mode, setMode] = useState<SignInFormMode>("password");
-    const { signInSocial, signInSocialPrecheck } = useFuseJwtAuth();
+    const { signInMagicLink, signInSocial, signInSocialPrecheck } = useFuseJwtAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [socialLoadingProvider, setSocialLoadingProvider] = useState<SocialProvider | null>(null);
     const [socialError, setSocialError] = useState<string | null>(null);
+    const [magicLinkState, setMagicLinkState] = useState<"idle" | "loading" | "error">("idle");
+    const [magicLinkError, setMagicLinkError] = useState<string | null>(null);
+    const attemptedMagicLinkRef = useRef<string>("");
     const signupRoleOptions = (signUpRoleOptions ?? [])
       .filter((roleOption) => roleOption.allowSignup === true)
       .map((roleOption) => ({
@@ -609,7 +613,67 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
       () => getEnabledSocialProviders(socialConfig, showDebugSocial),
       [socialConfig, showDebugSocial]
     );
+    const magicLinkToken = useMemo(() => (searchParams.get("mlt") || "").trim(), [searchParams]);
     const isAuthFlowBusy = socialLoadingProvider !== null;
+
+    useEffect(() => {
+      if (!magicLinkToken) {
+        setMagicLinkState("idle");
+        setMagicLinkError(null);
+        return;
+      }
+
+      if (attemptedMagicLinkRef.current === magicLinkToken) {
+        return;
+      }
+      attemptedMagicLinkRef.current = magicLinkToken;
+      setMagicLinkState("loading");
+      setMagicLinkError(null);
+
+      let active = true;
+      signInMagicLink({ token: magicLinkToken })
+        .then(() => {
+          if (!active) {
+            return;
+          }
+          const nextParams = new URLSearchParams(searchParams);
+          nextParams.delete("mlt");
+          setSearchParams(nextParams, { replace: true });
+        })
+        .catch((error) => {
+          if (!active) {
+            return;
+          }
+          const parsed = parseAuthError(error);
+          setMagicLinkError(parsed.rootMessage || "La liga de acceso es inválida o expiró.");
+          setMagicLinkState("error");
+        });
+
+      return () => {
+        active = false;
+      };
+    }, [magicLinkToken, searchParams, setSearchParams, signInMagicLink]);
+
+    if (magicLinkToken && magicLinkState === "loading") {
+      return (
+        <Box
+          sx={{
+            mx: { xs: "auto", sm: 0 },
+            width: { xs: "100%", sm: 320 },
+            maxWidth: 320,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            alignItems: "center"
+          }}
+        >
+          <AuthPageTitle title="Accediendo..." />
+          <Typography sx={{ fontSize: 16, textAlign: "center" }} color="text.secondary">
+            Validando liga de acceso segura.
+          </Typography>
+        </Box>
+      );
+    }
 
     const onSocialClick = useCallback(
       async (provider: SocialProvider) => {
@@ -681,6 +745,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
         }}
       >
         <AuthPageTitle title="Iniciar sesión" />
+        {magicLinkError ? <Alert severity="error">{magicLinkError}</Alert> : null}
         <Box sx={{ width: "100%" }}>
           <FuseSignInController
             LinkComponent={LinkComponent}
