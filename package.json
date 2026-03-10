@@ -67,6 +67,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "check:release": "npm run typecheck && npm run clean && npm run build",
     "changeset": "changeset",
+    "release:stable": "bash ./scripts/release-stable.sh",
+    "release:rc": "bash ./scripts/release-rc.sh",
     "release:version": "changeset version",
     "release:publish": "changeset publish",
     "release:publish:next": "changeset publish --tag next"
