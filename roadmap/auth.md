@@ -1,50 +1,53 @@
 # Auth Roadmap
 
-Referencia de QA:
-- Matriz de pruebas auth: [`roadmap/auth-test-matrix.md`](./auth-test-matrix.md)
+QA reference:
+- Auth test matrix: [`roadmap/auth-test-matrix.md`](./auth-test-matrix.md)
 
-## ✅ Completado
-- ✅ Arquitectura auth desacoplada para Fuse (`createAuthRoutes`, `createFuseAuthViews`, adapter/provider).
-- ✅ Login JWT con payload `login` + `password`.
-- ✅ Auto-login en recarga usando token + `me`.
-- ✅ OTP por SMS (`request` + `verify`).
-- ✅ Refresh token flow en cliente autenticado.
-- ✅ Signup alineado al contrato actual (camelCase, `username: null`).
-- ✅ Verificación de cuenta por `uid/token` desde query params.
-- ✅ Reenvío de verificación con cooldown de 30s + timer visible.
-- ✅ Botones de verify ordenados: primario iniciar sesión, secundario reenviar.
-- ✅ Redirect automático tras verify success (5s) con contador + click manual.
-- ✅ CTA en login para cuenta no verificada (`Ir a verificar cuenta`).
-- ✅ Manejo de errores backend visible en formularios.
-- ✅ Textos auth en español.
-- ✅ Hook de éxito de signup para toast desde integrador (`onSignUpSuccess`).
-- ✅ Soporte de selección de `role` en `sign up` (camelCase), con opciones por proyecto.
-- ✅ `createAuthClientFromJBWebConfig` para construir auth client desde config central.
-- ✅ Fallback de auth endpoint base path en `/authentication`.
-- ✅ Flujo OTP mejorado: confirmación antes de solicitar, bloqueo de inputs tras envío, acción `Cambiar número`.
-- ✅ Reorganización del módulo auth por dominios (`forms/sign-in`, `forms/sign-up`, `forms/password`, `forms/account`).
-- ✅ Reorganización Fuse dentro de `auth/fuse/*` (sin archivos Fuse en raíz de `auth`).
-- ✅ Backward compatibility en exports legacy (`JB*`) mientras se usan nombres más claros (`Auth*`) internamente.
-- ✅ Integración SDK para nuevos endpoints del contrato: social login/link/unlink.
-- ✅ Integración SDK para `PATCH /profile/picture/`.
-- ✅ Integración SDK para `PATCH|PUT /account/update/` y `DELETE /account/delete/`.
-- ✅ Integración SDK para perfiles por id (`GET|PATCH|DELETE /profiles/{id}/`) y creación (`POST /profiles/`).
-- ✅ Integración SDK para bootstrap admin endpoints (`create-superuser`, `create-staff`).
+## ✅ Completed
+- ✅ Decoupled auth architecture for Fuse (`createAuthRoutes`, `createFuseAuthViews`, adapter/provider).
+- ✅ JWT login with `login` + `password` payload.
+- ✅ Auto-login on reload using token + `me`.
+- ✅ OTP via SMS (`request` + `verify`).
+- ✅ Refresh token flow for authenticated clients.
+- ✅ Signup aligned with current contract (camelCase, `username: null`).
+- ✅ Account verification via `uid/token` from query params.
+- ✅ Verification resend with 30s cooldown + visible timer.
+- ✅ Verify buttons ordering: primary sign-in, secondary resend.
+- ✅ Auto-redirect after verify success (5s) with countdown + manual click.
+- ✅ Login CTA for unverified account (`Ir a verificar cuenta`).
+- ✅ Backend error handling visible in forms.
+- ✅ Spanish auth copy.
+- ✅ Signup success hook for integrator toast handling (`onSignUpSuccess`).
+- ✅ `role` selection support in sign up (camelCase), with per-project options.
+- ✅ `createAuthClientFromJBWebConfig` to build auth client from central config.
+- ✅ Auth base path fallback to `/authentication`.
+- ✅ Improved OTP flow: confirmation before request, input locking after send, `Cambiar número` action.
+- ✅ Auth module reorganization by domain (`forms/sign-in`, `forms/sign-up`, `forms/password`, `forms/account`).
+- ✅ Fuse reorganization under `auth/fuse/*` (no Fuse files at `auth` root).
+- ✅ Backward compatibility for legacy exports (`JB*`) while using clearer internal names (`Auth*`).
+- ✅ SDK integration for new contract endpoints: social login/link/unlink.
+- ✅ SDK/UI integration for `social precheck` (`POST /login/social/precheck/`) and role-selection decision based on `user_exists`.
+- ✅ Full social flow in Fuse views: provider auth -> precheck -> optional role selection -> social login.
+- ✅ SDK integration for `PATCH /profile/picture/`.
+- ✅ SDK integration for `PATCH|PUT /account/update/` and `DELETE /account/delete/`.
+- ✅ SDK integration for profile by id (`GET|PATCH|DELETE /profiles/{id}/`) and creation (`POST /profiles/`).
+- ✅ SDK integration for bootstrap admin endpoints (`create-superuser`, `create-staff`).
+- ✅ Unified auth page titles into one reusable component (`AuthPageTitle`).
+- ✅ `modern` layout responsive fixes (mobile/tablet/desktop) with correct centering when the right panel is hidden.
+- ✅ Auth visual scale adjustments (form width, titles, and buttons for better readability).
 
-## 🟡 En progreso
-- 🟡 Convertir defaults temporales de testing a flag explícita (`enableTestDefaults`).
-- 🟡 Homologar catálogo de mensajes/errores para i18n.
-- 🟡 Hacer adopción de `createJBWebConfig` en proyectos consumidores existentes (primer wiring aplicado en Mentalysis).
-- 🟡 Unificar parámetros auth para que salgan de config (`apiBasePath`, roles, default role).
+## 🟡 In Progress
+- 🟡 Convert temporary testing defaults to an explicit flag (`enableTestDefaults`).
+- 🟡 Standardize the messages/errors catalog for i18n.
+- 🟡 Continue `createJBWebConfig` adoption in existing consumer projects (first wiring already applied in Mentalysis).
+- 🟡 Unify auth parameters to come from config (`apiBasePath`, roles, default role).
 
-## 🔜 Pendiente
-- 🔜 Integración UI de Social Auth (botones/proveedores/callbacks).
-- 🔜 Integración UI para gestión de cuenta (`account/update`, `account/delete`).
-- 🔜 Integración UI para `profile picture`.
-- 🔜 Layouts auth configurables (2-3 variantes por proyecto).
-- 🔜 Implementar automatización de la matriz de pruebas auth (`roadmap/auth-test-matrix.md`).
-- 🔜 Publicación versionada estable + guía de migración.
+## 🔜 Pending
+- 🔜 UI integration for account management (`account/update`, `account/delete`).
+- 🔜 UI integration for `profile picture`.
+- 🔜 Implement auth test matrix automation (`roadmap/auth-test-matrix.md`).
+- 🔜 Stable versioned release + migration guide.
 
-## 🚧 Riesgos / deuda técnica
-- 🚧 Flujo de trabajo con paquete local `file:` requiere rebuild/reinstall frecuente.
-- 🚧 Parte de la UI auth aún depende de convenciones Fuse y debe abstraerse más.
+## 🚧 Risks / Technical Debt
+- 🚧 Local `file:` package workflow still requires frequent rebuild/reinstall.
+- 🚧 Part of auth UI still depends on Fuse conventions and needs further abstraction.

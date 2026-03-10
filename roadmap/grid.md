@@ -1,16 +1,16 @@
 # Grid Roadmap
 
-## ✅ Completado
-- ✅ Definición inicial con enfoque paginado.
-- ✅ Decisión actual: mantener paginación como modo principal.
+## ✅ Completed
+- ✅ Initial definition with paginated approach.
+- ✅ Current decision: keep pagination as the primary mode.
 
-## 🟡 En progreso
-- 🟡 Revisión de integración con TanStack Query para data orchestration.
+## 🟡 In Progress
+- 🟡 Integration review with TanStack Query for data orchestration.
 
-## 🔜 Pendiente
-- 🔜 Persistencia de estado (filtros, columnas, sort).
-- 🔜 Operación server-side completa (sorting/filtering/pagination).
-- 🔜 Evaluación formal de infinite scroll vs paginado por caso de uso.
+## 🔜 Pending
+- 🔜 State persistence (filters, columns, sort).
+- 🔜 Full server-side operation (sorting/filtering/pagination).
+- 🔜 Formal evaluation of infinite scroll vs pagination per use case.
 
-## 🚧 Riesgos / deuda técnica
-- 🚧 Requisitos de UX pueden diferir por dominio y forzar dos estrategias de carga.
+## 🚧 Risks / Technical Debt
+- 🚧 UX requirements may differ by domain and force two loading strategies.

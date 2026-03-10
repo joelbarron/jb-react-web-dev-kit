@@ -1,55 +1,143 @@
 import { Box, Button, InputBase, Paper, Typography } from '@mui/material';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
 
 import { JBGridHeaderProps } from './types';
 
 export function JBGridHeader(props: JBGridHeaderProps) {
   const {
+    moduleConfig,
+    iconNameRenderer,
+    animated = true,
+    animationDurationMs = 240,
+    animationStaggerMs = 60,
+    animationPreset = 'vertical',
+    breadcrumb,
     title,
+    subtitle,
     icon,
     searchText,
     onSearchTextChange,
-    searchPlaceholder = 'Search...',
+    searchPlaceholder,
     allowCreate = true,
-    createButtonLabel = 'Create',
+    createButtonLabel,
     onCreateClick,
     rightContent
   } = props;
 
+  const resolvedTitle = title ?? moduleConfig?.texts?.moduleName ?? '';
+  const resolvedSubtitle = subtitle ?? moduleConfig?.texts?.formHeaderSubtitle ?? '';
+  const resolvedSearchPlaceholder =
+    searchPlaceholder ?? moduleConfig?.texts?.searchPlaceholder ?? 'Search...';
+  const resolvedCreateLabel = createButtonLabel ?? moduleConfig?.texts?.newText ?? 'Create';
+  const resolvedIcon =
+    icon ?? (moduleConfig?.texts?.iconName && iconNameRenderer
+      ? iconNameRenderer(moduleConfig.texts.iconName)
+      : null);
+  const animateSx = (delayMs: number) =>
+    animated
+      ? {
+          animation: `jbGridHeaderFadeIn ${animationDurationMs}ms ease-out ${delayMs}ms both`
+        }
+      : undefined;
+  const animateFromLeftSx = (delayMs: number) =>
+    animated && animationPreset === 'sides'
+      ? {
+          animation: `jbGridHeaderFadeInLeft ${animationDurationMs}ms ease-out ${delayMs}ms both`
+        }
+      : animateSx(delayMs);
+  const animateFromRightSx = (delayMs: number) =>
+    animated && animationPreset === 'sides'
+      ? {
+          animation: `jbGridHeaderFadeInRight ${animationDurationMs}ms ease-out ${delayMs}ms both`
+        }
+      : animateSx(delayMs);
+
   return (
     <Box
       sx={{
+        width: '100%',
         display: 'flex',
-        flexDirection: { xs: 'column', sm: 'row' },
-        alignItems: { xs: 'stretch', sm: 'center' },
-        justifyContent: 'space-between',
+        flexDirection: 'column',
         gap: 2,
-        p: 2
+        p: { xs: 2, md: 3 },
+        '@keyframes jbGridHeaderFadeIn': {
+          from: { opacity: 0, transform: 'translateY(8px)' },
+          to: { opacity: 1, transform: 'translateY(0)' }
+        },
+        '@keyframes jbGridHeaderFadeInLeft': {
+          from: { opacity: 0, transform: 'translateX(-14px)' },
+          to: { opacity: 1, transform: 'translateX(0)' }
+        },
+        '@keyframes jbGridHeaderFadeInRight': {
+          from: { opacity: 0, transform: 'translateX(14px)' },
+          to: { opacity: 1, transform: 'translateX(0)' }
+        }
       }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        {icon}
-        <Typography
-          variant="h5"
-          sx={{ fontWeight: 700 }}>
-          {title}
-        </Typography>
-      </Box>
+      {breadcrumb ? <Box sx={animateSx(0)}>{breadcrumb}</Box> : null}
 
+      <Box
+        sx={{
+          display: { xs: 'flex', md: 'grid' },
+          flexDirection: { xs: 'column', md: 'row' },
+          gridTemplateColumns: { md: 'minmax(0, 1fr) auto' },
+          alignItems: { xs: 'center', md: 'center' },
+          gap: 2,
+          width: '100%'
+        }}>
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
+          justifyContent: { xs: 'center', md: 'flex-start' },
           gap: 1,
-          width: { xs: '100%', sm: 'auto' }
+          minWidth: 0,
+          width: '100%',
+          ...animateFromLeftSx(animationStaggerMs)
+        }}>
+        {resolvedIcon ? <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>{resolvedIcon}</Box> : null}
+        <Box sx={{ minWidth: 0, textAlign: { xs: 'center', md: 'left' } }}>
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: 700, lineHeight: 1.15 }}>
+            {resolvedTitle}
+          </Typography>
+          {resolvedSubtitle ? (
+            <Typography
+              variant="body2"
+              color="text.secondary">
+              {resolvedSubtitle}
+            </Typography>
+          ) : null}
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          width: { xs: '100%', md: 'auto' },
+          display: 'flex',
+          alignItems: { xs: 'center', md: 'center' },
+          justifySelf: { md: 'end' },
+          justifyContent: { xs: 'center', md: 'flex-end' },
+          flexWrap: 'wrap',
+          gap: 1,
+          minWidth: 0,
+          ...animateFromRightSx(animationStaggerMs * 2)
         }}>
         <Paper
           sx={{
             px: 1.5,
             py: 0.5,
-            width: { xs: '100%', sm: 300 }
+            width: { xs: '100%', md: 320 },
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            borderRadius: 1.5
           }}>
+          <SearchRoundedIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
           <InputBase
             fullWidth
-            placeholder={searchPlaceholder}
+            placeholder={resolvedSearchPlaceholder}
             value={searchText}
             onChange={(event) => onSearchTextChange(event.target.value)}
           />
@@ -60,12 +148,26 @@ export function JBGridHeader(props: JBGridHeaderProps) {
         {allowCreate && onCreateClick ? (
           <Button
             variant="contained"
+            startIcon={<AddRoundedIcon fontSize="small" />}
+            sx={(theme) => ({
+              borderRadius: 1.5,
+              minHeight: 42,
+              px: 2.25,
+              fontWeight: 700,
+              boxShadow: 'none',
+              backgroundImage: 'none',
+              '&:hover': {
+                boxShadow: 'none',
+                backgroundImage: 'none',
+                backgroundColor: theme.palette.primary.dark
+              }
+            })}
             onClick={onCreateClick}>
-            {createButtonLabel}
+            {resolvedCreateLabel}
           </Button>
         ) : null}
+      </Box>
       </Box>
     </Box>
   );
 }
-

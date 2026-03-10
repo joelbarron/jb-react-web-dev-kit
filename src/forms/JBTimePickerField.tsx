@@ -1,5 +1,6 @@
 import { TextFieldProps } from '@mui/material';
-import { TimePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import { ComponentProps } from 'react';
 import { Controller, FieldValues, Path } from 'react-hook-form';
 
@@ -22,6 +23,23 @@ export function JBTimePickerField<
 >(props: JBTimePickerFieldProps<TFieldValues, TName>) {
   const { control, name, rules, textFieldProps, ...timePickerProps } = props;
   const { size = 'medium', ...resolvedTextFieldProps } = textFieldProps ?? {};
+  const mergedTextFieldSx = Array.isArray(resolvedTextFieldProps.sx)
+    ? [
+        {
+          '& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root': {
+            backgroundColor: 'common.background'
+          }
+        },
+        ...resolvedTextFieldProps.sx
+      ]
+    : [
+        {
+          '& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root': {
+            backgroundColor: 'common.background'
+          }
+        },
+        resolvedTextFieldProps.sx
+      ];
 
   return (
     <Controller
@@ -29,19 +47,22 @@ export function JBTimePickerField<
       name={name}
       rules={rules}
       render={({ field, fieldState }) => (
-        <TimePicker
-          {...timePickerProps}
-          value={field.value ?? null}
-          onChange={(value) => field.onChange(value)}
-          slotProps={{
-            textField: {
-              ...resolvedTextFieldProps,
-              size,
-              error: !!fieldState.error,
-              helperText: getJBFieldErrorMessage(fieldState.error) ?? resolvedTextFieldProps.helperText
-            }
-          }}
-        />
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <TimePicker
+            {...timePickerProps}
+            value={field.value ?? null}
+            onChange={(value) => field.onChange(value)}
+            slotProps={{
+              textField: {
+                ...resolvedTextFieldProps,
+                size,
+                sx: mergedTextFieldSx,
+                error: !!fieldState.error,
+                helperText: getJBFieldErrorMessage(fieldState.error) ?? resolvedTextFieldProps.helperText
+              }
+            }}
+          />
+        </LocalizationProvider>
       )}
     />
   );

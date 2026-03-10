@@ -1,19 +1,21 @@
 # Forms Roadmap
 
-## ✅ Completado
-- ✅ Set base de custom fields (text, select, checkbox, etc.) para RHF.
-- ✅ Soporte de validación con Zod en forms auth.
-- ✅ Unificación de checkboxes auth al custom field.
-- ✅ Mejora de estilo base en `JBCheckboxField` (border, hover, spacing, label).
+## ✅ Completed
+- ✅ Base set of custom fields (text, select, checkbox, etc.) for RHF.
+- ✅ Zod validation support in auth forms.
+- ✅ Auth checkbox unification using the custom field.
+- ✅ Base style improvement in `JBCheckboxField` (border, hover, spacing, label).
+- ✅ Base size for `JBTextField/JBSelectField/JBDatePickerField/JBTimePickerField` stabilized to default `size="medium"`.
+- ✅ Visual size adjustments in auth buttons for better readability.
 
-## 🟡 En progreso
-- 🟡 Guía única para uso mixto `rules` + `zodResolver`.
-- 🟡 Expansión de fields comunes según uso real de proyectos.
+## 🟡 In Progress
+- 🟡 Single guide for mixed `rules` + `zodResolver` usage.
+- 🟡 Expansion of common fields based on real project usage.
 
-## 🔜 Pendiente
-- 🔜 Catálogo visual de fields con ejemplos por caso.
-- 🔜 Theming configurable por consumidor (densidad/tamaños/estados).
-- 🔜 Cobertura de tests para componentes de formulario.
+## 🔜 Pending
+- 🔜 Visual field catalog with scenario-based examples.
+- 🔜 Consumer-configurable theming (density/sizes/states).
+- 🔜 Test coverage for form components.
 
-## 🚧 Riesgos / deuda técnica
-- 🚧 Variaciones de estilo por proyecto pueden romper consistencia si no hay tokens compartidos.
+## 🚧 Risks / Technical Debt
+- 🚧 Per-project style variations can break consistency without shared tokens.

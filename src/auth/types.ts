@@ -18,6 +18,7 @@ export type JbDrfAuthEndpoints = {
   loginSocialPrecheck: string;
   loginSocialLink: string;
   loginSocialUnlink: string;
+  loginMagicLinkConsume: string;
   loginOtpVerify: string;
   otpRequest: string;
   register: string;
@@ -150,6 +151,18 @@ export type VerifyOtpPayload = {
   role?: string;
   email?: string;
   phone?: string;
+  device?: {
+    platform?: string;
+    name?: string;
+    token?: string;
+    notificationToken?: string;
+  };
+};
+
+export type MagicLinkConsumePayload = {
+  token: string;
+  role?: string;
+  client?: 'web' | 'mobile';
   device?: {
     platform?: string;
     name?: string;

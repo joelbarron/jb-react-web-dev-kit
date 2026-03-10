@@ -80,7 +80,60 @@ export const createJBWebConfigFromEnv = (
   baseConfig?: JBAppConfigOverrides,
   env?: Record<string, string | undefined>
 ): JBAppConfig => {
-  const runtimeEnv = env ?? {};
+  const resolveRuntimeEnv = (): Record<string, string | undefined> => {
+    if (env) {
+      return env;
+    }
+
+    try {
+      const importMetaEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
+      if (importMetaEnv && typeof importMetaEnv === 'object') {
+        return importMetaEnv;
+      }
+    } catch {
+      // Ignore import.meta access errors outside of ESM/runtime contexts.
+    }
+
+    if (typeof globalThis !== 'undefined') {
+      const globalEnv = (globalThis as { __ENV__?: Record<string, string | undefined> }).__ENV__;
+      if (globalEnv && typeof globalEnv === 'object') {
+        return globalEnv;
+      }
+    }
+
+    return {};
+  };
+
+  const runtimeEnv = resolveRuntimeEnv();
+  const parseEnvList = (value?: string): string[] | undefined => {
+    if (!value) {
+      return undefined;
+    }
+
+    const normalizedValue = value.trim();
+    if (!normalizedValue) {
+      return undefined;
+    }
+
+    if (normalizedValue.startsWith('[') && normalizedValue.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(normalizedValue);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .map((item) => String(item).trim())
+            .filter(Boolean);
+        }
+      } catch {
+        // If JSON parsing fails, continue with comma-separated parsing.
+      }
+    }
+
+    return normalizedValue
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  };
+
   const parseBooleanEnv = (value?: string): boolean | undefined => {
     if (typeof value === 'undefined') {
       return undefined;
@@ -96,10 +149,30 @@ export const createJBWebConfigFromEnv = (
   const googleEnabled = parseBooleanEnv(runtimeEnv.VITE_AUTH_SOCIAL_GOOGLE_ENABLED);
   const facebookEnabled = parseBooleanEnv(runtimeEnv.VITE_AUTH_SOCIAL_FACEBOOK_ENABLED);
   const appleEnabled = parseBooleanEnv(runtimeEnv.VITE_AUTH_SOCIAL_APPLE_ENABLED);
+  const apiHostOverrides: Partial<Record<JBAppStage, string>> = {};
+
+  const setApiHost = (stage: JBAppStage, value?: string) => {
+    if (!value) {
+      return;
+    }
+
+    const normalizedValue = value.trim();
+    if (!normalizedValue) {
+      return;
+    }
+
+    apiHostOverrides[stage] = normalizedValue;
+  };
+
+  setApiHost('PRODUCTION', runtimeEnv.VITE_API_HOST_PRODUCTION);
+  setApiHost('QA', runtimeEnv.VITE_API_HOST_QA);
+  setApiHost('DEVELOPMENT', runtimeEnv.VITE_API_HOST_DEVELOPMENT);
+  setApiHost('LOCAL', runtimeEnv.VITE_API_HOST_LOCAL);
 
   return createJBWebConfig(baseConfig, {
     debug: runtimeEnv.VITE_DEBUG === 'true' ? true : undefined,
     stage: runtimeEnv.VITE_STAGE as JBAppStage | undefined,
+    api: Object.keys(apiHostOverrides).length > 0 ? { host: apiHostOverrides as Record<JBAppStage, string> } : undefined,
     integrations: {
       mapboxToken: runtimeEnv.VITE_MAPBOX_TOKEN
     },
@@ -112,30 +185,21 @@ export const createJBWebConfigFromEnv = (
           clientId: runtimeEnv.VITE_AUTH_SOCIAL_GOOGLE_CLIENT_ID,
           redirectUri: runtimeEnv.VITE_AUTH_SOCIAL_GOOGLE_REDIRECT_URI,
           scope: runtimeEnv.VITE_AUTH_SOCIAL_GOOGLE_SCOPE,
-          scopes: runtimeEnv.VITE_AUTH_SOCIAL_GOOGLE_SCOPES
-            ?.split(',')
-            .map((item) => item.trim())
-            .filter(Boolean)
+          scopes: parseEnvList(runtimeEnv.VITE_AUTH_SOCIAL_GOOGLE_SCOPES)
         },
         facebook: {
           ...(typeof facebookEnabled === 'boolean' ? { enabled: facebookEnabled } : {}),
           clientId: runtimeEnv.VITE_AUTH_SOCIAL_FACEBOOK_CLIENT_ID,
           redirectUri: runtimeEnv.VITE_AUTH_SOCIAL_FACEBOOK_REDIRECT_URI,
           scope: runtimeEnv.VITE_AUTH_SOCIAL_FACEBOOK_SCOPE,
-          scopes: runtimeEnv.VITE_AUTH_SOCIAL_FACEBOOK_SCOPES
-            ?.split(',')
-            .map((item) => item.trim())
-            .filter(Boolean)
+          scopes: parseEnvList(runtimeEnv.VITE_AUTH_SOCIAL_FACEBOOK_SCOPES)
         },
         apple: {
           ...(typeof appleEnabled === 'boolean' ? { enabled: appleEnabled } : {}),
           clientId: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_CLIENT_ID,
           redirectUri: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_REDIRECT_URI,
           scope: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_SCOPE,
-          scopes: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_SCOPES
-            ?.split(',')
-            .map((item) => item.trim())
-            .filter(Boolean),
+          scopes: parseEnvList(runtimeEnv.VITE_AUTH_SOCIAL_APPLE_SCOPES),
           usePopup: parseBooleanEnv(runtimeEnv.VITE_AUTH_SOCIAL_APPLE_USE_POPUP),
           responseMode: runtimeEnv.VITE_AUTH_SOCIAL_APPLE_RESPONSE_MODE as
             | 'web_message'

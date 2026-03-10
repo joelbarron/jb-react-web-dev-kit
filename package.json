@@ -1,11 +1,15 @@
 {
   "name": "@joelbarron/react-web-dev-kit",
-  "version": "0.1.4",
+  "version": "0.1.8",
   "private": false,
   "sideEffects": false,
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joelbarron/jb-react-web-dev-kit.git"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -21,6 +25,11 @@
       "types": "./dist/config/index.d.ts",
       "import": "./dist/config/index.js",
       "default": "./dist/config/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js",
+      "default": "./dist/core/index.js"
     },
     "./forms": {
       "types": "./dist/forms/index.d.ts",
@@ -58,8 +67,11 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "check:release": "npm run typecheck && npm run clean && npm run build",
     "changeset": "changeset",
+    "release:stable": "bash ./scripts/release-stable.sh",
+    "release:rc": "bash ./scripts/release-rc.sh",
     "release:version": "changeset version",
-    "release:publish": "changeset publish"
+    "release:publish": "changeset publish",
+    "release:publish:next": "changeset publish --tag next"
   },
   "peerDependencies": {
     "react": ">=19",
@@ -72,6 +84,7 @@
     "@hookform/resolvers": ">=5",
     "zod": ">=4",
     "@mui/material": ">=5",
+    "@mui/icons-material": ">=5",
     "@mui/x-date-pickers": ">=6",
     "@devexpress/dx-react-grid": ">=4",
     "@devexpress/dx-react-grid-material-ui": ">=4"

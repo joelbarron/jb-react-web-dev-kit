@@ -1,9 +1,15 @@
 import { ReactNode } from 'react';
 
 export type JBGridDefaults = {
-  pageSize: number;
+  pageSize?: number;
+  virtualScrolling?: boolean;
+  estimatedRowHeight?: number;
+  virtualTableHeight?: number;
+  virtualTableHeightMode?: 'fixed' | 'fill';
+  virtualTableHeightRatio?: number;
   allowSorting?: boolean;
   allowColumnResizing?: boolean;
+  allowColumnReordering?: boolean;
   allowSelection?: boolean;
   allowSelectAll?: boolean;
   showSelectionColumn?: boolean;
@@ -12,9 +18,14 @@ export type JBGridDefaults = {
   allowGrouping?: boolean;
   filters?: unknown[];
   sorting?: unknown[];
-  grouping?: unknown[];
-  expandedGroups?: unknown[];
+  grouping?: JBGridGrouping[];
+  expandedGroups?: string[];
+  expandGroupedRowsByDefault?: boolean;
   pageSizes?: number[];
+};
+
+export type JBGridGrouping = {
+  columnName: string;
 };
 
 export type JBGridColumn = {
@@ -34,10 +45,11 @@ export type JBGridConfig = {
   imageColumns?: string[];
   booleanColumns?: string[];
   currencyColumns?: string[];
+  dateColumns?: string[];
   totalSummaryItems?: unknown[];
   groupSummaryItems?: unknown[];
   tableColumnExtensions?: unknown[];
-  defaults: JBGridDefaults;
+  defaults?: JBGridDefaults;
 };
 
 export type JBGridListResponse<TData> = {
@@ -72,16 +84,73 @@ export type JBGridProps<TData extends Record<string, unknown>> = {
   gridConfig: JBGridConfig;
   service?: JBGridService<TData>;
   rows?: TData[];
+  totalCount?: number;
+  loading?: boolean;
+  isFetching?: boolean;
+  fetchingLabel?: string;
+  error?: ReactNode;
+  currentPage?: number;
+  onCurrentPageChange?: (page: number) => void;
+  pageSize?: number;
+  onPageSizeChange?: (pageSize: number) => void;
   searchText: string;
   onSearchTextChange: (text: string) => void;
   onRowSelected?: (row: TData) => void;
   loadData?: (args: JBGridLoadDataArgs<TData>) => void | Promise<void>;
   loadingComponent?: ReactNode;
+  emptyComponent?: ReactNode;
   getRowId?: (row: TData) => string | number;
+  paginationPosition?: 'top' | 'bottom' | 'both' | 'none';
+  stickyPagination?: boolean;
+  height?: number | string;
+  stickyHeader?: boolean;
+  infiniteScroll?: boolean;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  loadMoreThreshold?: number;
+  onLoadMore?: () => void;
+};
+
+export type JBModuleTextsConfig = {
+  moduleName?: string;
+  iconName?: string;
+  newText?: string;
+  editText?: string;
+  searchPlaceholder?: string;
+  goBackOnItemNotFoundText?: string;
+  goBackToGrid?: string;
+  formHeaderSubtitle?: string;
+  formHeaderRecordPrefix?: string;
+};
+
+export type JBModuleUrlsConfig = {
+  base?: string;
+  list?: string;
+  new?: string;
+  edit?: string;
+};
+
+export type JBModuleApiConfig = {
+  basePath: string;
+  [key: string]: unknown;
+};
+
+export type JBModuleConfig = {
+  urls?: JBModuleUrlsConfig;
+  texts?: JBModuleTextsConfig;
+  api?: JBModuleApiConfig;
 };
 
 export type JBGridHeaderProps = {
-  title: string;
+  moduleConfig?: JBModuleConfig;
+  iconNameRenderer?: (iconName: string) => ReactNode;
+  animated?: boolean;
+  animationDurationMs?: number;
+  animationStaggerMs?: number;
+  animationPreset?: 'vertical' | 'sides';
+  breadcrumb?: ReactNode;
+  title?: string;
+  subtitle?: string;
   icon?: ReactNode;
   searchText: string;
   onSearchTextChange: (value: string) => void;
@@ -92,3 +161,55 @@ export type JBGridHeaderProps = {
   rightContent?: ReactNode;
 };
 
+export type JBFormHeaderProps = {
+  moduleConfig?: JBModuleConfig;
+  iconNameRenderer?: (iconName: string) => ReactNode;
+  animated?: boolean;
+  animationDurationMs?: number;
+  animationStaggerMs?: number;
+  animationPreset?: 'vertical' | 'sides';
+  breadcrumb?: ReactNode;
+  showBackButton?: boolean;
+  backLabel?: string;
+  onBackClick?: () => void;
+  backContent?: ReactNode;
+  isNew?: boolean;
+  recordId?: string | number;
+  title?: string;
+  dynamicTitle?: string;
+  formValues?: Record<string, unknown>;
+  getDynamicTitle?: (args: {
+    isNew: boolean;
+    values?: Record<string, unknown>;
+  }) => string | undefined;
+  subtitle?: string;
+  dynamicSubtitle?: string;
+  getDynamicSubtitle?: (args: {
+    isNew: boolean;
+    values?: Record<string, unknown>;
+  }) => string | undefined;
+  icon?: ReactNode;
+  actions?: {
+    formDisabled?: boolean;
+    allowEdit?: boolean;
+    allowDelete?: boolean;
+    showDeleteWhenEditing?: boolean;
+    disableSave?: boolean;
+    disableCancel?: boolean;
+    disableEdit?: boolean;
+    disableDelete?: boolean;
+    saveLabel?: string;
+    cancelLabel?: string;
+    editLabel?: string;
+    deleteLabel?: string;
+    saveIcon?: ReactNode;
+    cancelIcon?: ReactNode;
+    editIcon?: ReactNode;
+    deleteIcon?: ReactNode;
+    onSave?: () => void;
+    onCancel?: () => void;
+    onStartEdit?: () => void;
+    onDelete?: () => void;
+  };
+  rightContent?: ReactNode;
+};
