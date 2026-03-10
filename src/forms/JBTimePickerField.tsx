@@ -23,6 +23,23 @@ export function JBTimePickerField<
 >(props: JBTimePickerFieldProps<TFieldValues, TName>) {
   const { control, name, rules, textFieldProps, ...timePickerProps } = props;
   const { size = 'medium', ...resolvedTextFieldProps } = textFieldProps ?? {};
+  const mergedTextFieldSx = Array.isArray(resolvedTextFieldProps.sx)
+    ? [
+        {
+          '& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root': {
+            backgroundColor: 'common.background'
+          }
+        },
+        ...resolvedTextFieldProps.sx
+      ]
+    : [
+        {
+          '& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root': {
+            backgroundColor: 'common.background'
+          }
+        },
+        resolvedTextFieldProps.sx
+      ];
 
   return (
     <Controller
@@ -39,6 +56,7 @@ export function JBTimePickerField<
               textField: {
                 ...resolvedTextFieldProps,
                 size,
+                sx: mergedTextFieldSx,
                 error: !!fieldState.error,
                 helperText: getJBFieldErrorMessage(fieldState.error) ?? resolvedTextFieldProps.helperText
               }

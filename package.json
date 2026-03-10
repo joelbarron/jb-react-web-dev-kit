@@ -6,6 +6,10 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joelbarron/jb-react-web-dev-kit.git"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -64,7 +68,8 @@
     "check:release": "npm run typecheck && npm run clean && npm run build",
     "changeset": "changeset",
     "release:version": "changeset version",
-    "release:publish": "changeset publish"
+    "release:publish": "changeset publish",
+    "release:publish:next": "changeset publish --tag next"
   },
   "peerDependencies": {
     "react": ">=19",

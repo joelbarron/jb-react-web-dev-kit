@@ -9,3 +9,4 @@ Guias por seccion:
 - [Query](./query.md)
 - [Hooks](./hooks.md)
 - [Utils](./utils.md)
+- [Release](./release.md)
