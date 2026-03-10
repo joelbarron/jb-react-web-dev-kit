@@ -1,24 +1,23 @@
 # @joelbarron/react-web-dev-kit
 
-Core reusable para apps web React.
+[![npm version](https://img.shields.io/npm/v/%40joelbarron%2Freact-web-dev-kit?label=npm&color=cb3837)](https://www.npmjs.com/package/@joelbarron/react-web-dev-kit)
+[![npm downloads](https://img.shields.io/npm/dm/%40joelbarron%2Freact-web-dev-kit?label=downloads)](https://www.npmjs.com/package/@joelbarron/react-web-dev-kit)
+[![CI](https://img.shields.io/github/actions/workflow/status/joelbarron/jb-react-web-dev-kit/ci.yml?branch=main&label=CI)](https://github.com/joelbarron/jb-react-web-dev-kit/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/joelbarron/jb-react-web-dev-kit/release.yml?branch=main&label=release)](https://github.com/joelbarron/jb-react-web-dev-kit/actions/workflows/release.yml)
 
-Incluye:
-- `auth` (`createAuthClient` para `jb-drf-auth`)
-- `config` (`createJBWebConfig`, overrides por stage/env)
-- `forms` (`JBTextField`, `JBSelectField`, `JBCheckboxField`, `JBSwitchField`, `JBRadioGroupField`, `JBDatePickerField`, `JBTimePickerField`)
-- `grid` (`JBGrid`, `JBGridHeader`, providers)
-- `hooks` y `utils`
+Libreria reusable para apps web React con piezas listas para autenticacion, formularios, grillas, config por ambiente y utilidades comunes.
 
-## Documentacion por secciones
+## Que incluye
 
-- [Indice docs](./docs/README.md)
-- [Auth](./docs/auth.md)
-- [Config](./docs/config.md)
-- [Forms](./docs/forms.md)
-- [Grid](./docs/grid.md)
-- [Query](./docs/query.md)
-- [Hooks](./docs/hooks.md)
-- [Utils](./docs/utils.md)
+| Modulo | Que aporta | Docs |
+| --- | --- | --- |
+| `auth` | Cliente para `jb-drf-auth`, provider, hooks y rutas de auth | [docs/auth.md](./docs/auth.md) |
+| `config` | Config global por stage y helpers de URL/API | [docs/config.md](./docs/config.md) |
+| `forms` | Campos base sobre React Hook Form + MUI | [docs/forms.md](./docs/forms.md) |
+| `grid` | `JBGrid`, header y providers para tablas | [docs/grid.md](./docs/grid.md) |
+| `query` | QueryClient preconfigurado para React Query | [docs/query.md](./docs/query.md) |
+| `hooks` | Hooks compartidos para casos de app | [docs/hooks.md](./docs/hooks.md) |
+| `utils` | Helpers generales reutilizables | [docs/utils.md](./docs/utils.md) |
 
 ## Instalacion
 
@@ -26,37 +25,35 @@ Incluye:
 npm i @joelbarron/react-web-dev-kit
 ```
 
-## Auth
+Peer deps principales (segun `package.json`):
+- `react >= 19`
+- `react-dom >= 19`
+- `@tanstack/react-query >= 5`
+- `react-hook-form >= 7`
+- `@mui/material >= 5`
+
+## Inicio rapido
+
+### Auth client
 
 ```ts
-import { createAuthClient } from '@joelbarron/react-web-dev-kit';
+import { createAuthClient } from '@joelbarron/react-web-dev-kit/auth';
 
 export const authClient = createAuthClient({
   apiBaseUrl: import.meta.env.VITE_API_URL,
   onUnauthorized: () => {
-    // ejemplo: limpiar estado y redirigir
+    window.location.href = '/sign-in';
   }
 });
-
-await authClient.loginBasic({
-  login: 'demo@mail.com',
-  password: 'secret',
-  client: 'web'
-});
-
-const me = await authClient.getMe();
 ```
 
-### Auth Provider + Hook
+### Auth Provider
 
 ```tsx
-import { JBAuthProvider, useJBAuth, createAuthClient } from '@joelbarron/react-web-dev-kit/auth';
+import { JBAuthProvider } from '@joelbarron/react-web-dev-kit/auth';
+import { authClient } from './authClient';
 
-const authClient = createAuthClient({
-  apiBaseUrl: import.meta.env.VITE_API_URL
-});
-
-function Root() {
+export function Root() {
   return (
     <JBAuthProvider authClient={authClient}>
       <App />
@@ -65,63 +62,19 @@ function Root() {
 }
 ```
 
-### Auth Routes Factory
-
-```tsx
-import { createAuthRoutes } from '@joelbarron/react-web-dev-kit/auth';
-
-const authRoutes = createAuthRoutes({
-  pages: {
-    signIn: SignInPage,
-    signUp: SignUpPage,
-    forgotPassword: ForgotPasswordPage,
-    resetPassword: ResetPasswordPage,
-    signOut: SignOutPage
-  },
-  pageComponent: ({ children }) => <AuthLayout>{children}</AuthLayout>,
-  routeMeta: {
-    signIn: { auth: ['guest'] },
-    signUp: { auth: ['guest'] }
-  }
-});
-```
-
-### Auth Query Hooks (TanStack Query)
-
-```ts
-import { createAuthClient, createAuthQueryHooks } from '@joelbarron/react-web-dev-kit/auth';
-
-const authClient = createAuthClient({
-  apiBaseUrl: import.meta.env.VITE_API_URL
-});
-
-export const authQueryHooks = createAuthQueryHooks(authClient);
-```
-
-## Query Client
+### Query client
 
 ```ts
 import { createReactWebQueryClient } from '@joelbarron/react-web-dev-kit/query';
 
-const queryClient = createReactWebQueryClient({
+export const queryClient = createReactWebQueryClient({
   onUnauthorized: () => {
     window.location.href = '/sign-in';
   }
 });
 ```
 
-### Auth Forms Base
-
-Tambien incluye formularios base para auth:
-- `AuthPasswordSignInForm`
-- `AuthForgotPasswordForm`
-- `AuthResetPasswordForm`
-
-```tsx
-import { AuthPasswordSignInForm } from '@joelbarron/react-web-dev-kit/auth';
-```
-
-## Config Global (overrideable)
+### Config por ambiente
 
 ```ts
 import { createJBWebConfigFromEnv, getApiBaseUrl } from '@joelbarron/react-web-dev-kit/config';
@@ -142,95 +95,47 @@ const appConfig = createJBWebConfigFromEnv(
   import.meta.env as Record<string, string | undefined>
 );
 
-const apiBaseUrl = getApiBaseUrl(appConfig);
+export const apiBaseUrl = getApiBaseUrl(appConfig);
 ```
 
-## Forms (React Hook Form + MUI)
+### Forms y Grid
 
 ```tsx
-import { Controller, useForm } from 'react-hook-form';
-import { JBDatePickerField, JBSelectField, JBTextField } from '@joelbarron/react-web-dev-kit';
-
-type FormValues = {
-  name: string;
-  status: string;
-  birthday: Date | null;
-};
-
-const options = [
-  { label: 'Active', value: 'ACTIVE' },
-  { label: 'Inactive', value: 'INACTIVE' }
-];
-
-function ExampleForm() {
-  const { control } = useForm<FormValues>({
-    defaultValues: { name: '', status: '', birthday: null }
-  });
-
-  return (
-    <>
-      <JBTextField
-        control={control}
-        name="name"
-        label="Name"
-        fullWidth
-      />
-      <JBSelectField
-        control={control}
-        name="status"
-        label="Status"
-        options={options}
-        fullWidth
-      />
-      <JBDatePickerField
-        control={control}
-        name="birthday"
-        label="Birthday"
-      />
-    </>
-  );
-}
+import { JBTextField, JBSelectField, JBDatePickerField, JBGrid, JBGridHeader } from '@joelbarron/react-web-dev-kit';
 ```
 
-## Grid
+Tambien incluye formularios listos de auth:
+- `AuthPasswordSignInForm`
+- `AuthForgotPasswordForm`
+- `AuthResetPasswordForm`
 
-```tsx
-import { JBGrid, JBGridHeader, JBGridConfig } from '@joelbarron/react-web-dev-kit';
-import { useState } from 'react';
+## Versionado y release
 
-const gridConfig: JBGridConfig = {
-  columns: [
-    { name: 'id', title: 'ID' },
-    { name: 'name', title: 'Name' }
-  ],
-  columnsWidths: [
-    { columnName: 'id', width: 120 },
-    { columnName: 'name', width: 320 }
-  ],
-  defaults: {
-    pageSize: 10,
-    allowSelection: true
-  }
-};
+Canales publicados en npm:
+- `latest`: versiones estables desde `main`
+- `next`: prereleases (`-rc.x`) desde `next`
 
-function ExampleGrid({ service }: { service: { list: Function } }) {
-  const [searchText, setSearchText] = useState('');
+Consulta rapida de version y dist-tags:
 
-  return (
-    <>
-      <JBGridHeader
-        title="Users"
-        searchText={searchText}
-        onSearchTextChange={setSearchText}
-      />
-      <JBGrid
-        gridConfig={gridConfig}
-        service={service as any}
-        searchText={searchText}
-        onSearchTextChange={setSearchText}
-        onRowSelected={(row) => console.log(row)}
-      />
-    </>
-  );
-}
+```bash
+npm view @joelbarron/react-web-dev-kit version dist-tags --json
 ```
+
+Guia completa de release automation:
+- [docs/release.md](./docs/release.md)
+
+## Documentacion
+
+- [Indice docs](./docs/README.md)
+- [Auth](./docs/auth.md)
+- [Config](./docs/config.md)
+- [Forms](./docs/forms.md)
+- [Grid](./docs/grid.md)
+- [Query](./docs/query.md)
+- [Hooks](./docs/hooks.md)
+- [Utils](./docs/utils.md)
+- [Release](./docs/release.md)
+
+## Changelog
+
+- [CHANGELOG.md](./CHANGELOG.md)
