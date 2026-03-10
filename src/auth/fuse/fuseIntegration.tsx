@@ -25,6 +25,16 @@ export const fuseAuthRoles = {
 
 export type FuseAuthRolesMap = Record<string, string[]>;
 
+type FuseProfileRoleLike = {
+  value?: string | null;
+};
+
+type FuseJBWebConfigLike = {
+  auth?: {
+    profileRoles?: FuseProfileRoleLike[] | null;
+  } | null;
+};
+
 export function createFuseAuthRoles(customRoles?: FuseAuthRolesMap): FuseAuthRolesMap {
   const mergedRoles: FuseAuthRolesMap = Object.entries(fuseAuthRoles).reduce<FuseAuthRolesMap>(
     (accumulator, [roleKey, roleValues]) => {
@@ -49,6 +59,39 @@ export function createFuseAuthRoles(customRoles?: FuseAuthRolesMap): FuseAuthRol
   });
 
   return mergedRoles;
+}
+
+export function resolveAuthenticatedAuthRoles(
+  jbWebConfig?: FuseJBWebConfigLike,
+  fallbackAuthenticatedRoles: string[] = ['admin', 'staff', 'doctor', 'patient']
+): string[] {
+  const configuredAuthenticatedAuthRoles = (jbWebConfig?.auth?.profileRoles ?? [])
+    .map((profileRole) => String(profileRole?.value ?? '').trim().toLowerCase())
+    .filter(Boolean);
+
+  const source = configuredAuthenticatedAuthRoles.length
+    ? configuredAuthenticatedAuthRoles
+    : fallbackAuthenticatedRoles;
+
+  return Array.from(new Set(source));
+}
+
+export function createFuseAuthRolesFromJBWebConfig(
+  jbWebConfig?: FuseJBWebConfigLike,
+  customRoles?: FuseAuthRolesMap,
+  options?: {
+    authenticatedRoleKey?: string;
+    fallbackAuthenticatedRoles?: string[];
+  }
+): FuseAuthRolesMap {
+  const authenticatedRoleKey = options?.authenticatedRoleKey ?? 'authenticated';
+  const fallbackAuthenticatedRoles = options?.fallbackAuthenticatedRoles ?? ['admin', 'staff', 'doctor', 'patient'];
+  const authenticatedAuthRoles = resolveAuthenticatedAuthRoles(jbWebConfig, fallbackAuthenticatedRoles);
+
+  return createFuseAuthRoles({
+    ...(customRoles ?? {}),
+    [authenticatedRoleKey]: authenticatedAuthRoles
+  });
 }
 
 export function createFuseUserModel<TUser extends FuseUser>() {
