@@ -1,0 +1,8 @@
+{
+  "mode": "pre",
+  "tag": "rc",
+  "initialVersions": {
+    "@joelbarron/react-web-dev-kit": "0.1.8"
+  },
+  "changesets": []
+}
