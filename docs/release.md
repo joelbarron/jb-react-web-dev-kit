@@ -40,6 +40,21 @@ Do not commit `.changeset/pre.json` into `main`.
    - Workflow updates/creates `changeset-release/next`.
    - Merge that PR to publish prerelease (`-rc.x`) with npm tag `next`.
 
+## Helper scripts
+
+You can use these commands instead of running git commands manually:
+
+```bash
+# Stable flow: creates a changeset, commits it on main and pushes
+npm run release:stable
+
+# Optional custom commit message
+bash ./scripts/release-stable.sh "chore: release changeset for auth fixes"
+
+# RC flow: merges origin/main into next and pushes
+npm run release:rc
+```
+
 ## Validation
 
 Check tags and versions:
