@@ -82,6 +82,12 @@ Check tags and versions:
 npm view @joelbarron/react-web-dev-kit version dist-tags --json
 ```
 
+Validate publish payload includes `dist`:
+
+```bash
+npm run pack:verify
+```
+
 Expected:
 - `latest` remains stable
 - `next` points to the newest rc prerelease
