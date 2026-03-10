@@ -38,6 +38,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify publish payload
+        run: |
+          npm pack --dry-run > /tmp/npm-pack.txt
+          grep -q "dist/index.js" /tmp/npm-pack.txt
+
       - name: Version or Publish (stable)
         if: github.ref == 'refs/heads/main'
         uses: changesets/action@v1

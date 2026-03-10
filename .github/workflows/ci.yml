@@ -32,3 +32,8 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Verify publish payload
+        run: |
+          npm pack --dry-run > /tmp/npm-pack.txt
+          grep -q "dist/index.js" /tmp/npm-pack.txt
