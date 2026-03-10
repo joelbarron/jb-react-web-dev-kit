@@ -66,7 +66,7 @@
     "clean": "rm -rf dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepack": "npm run clean && npm run build",
-    "pack:verify": "npm pack --dry-run",
+    "pack:verify": "node ./scripts/verify-pack.cjs",
     "check:release": "npm run typecheck && npm run clean && npm run build",
     "changeset": "changeset",
     "release:stable": "bash ./scripts/release-stable.sh",

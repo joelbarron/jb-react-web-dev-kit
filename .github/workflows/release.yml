@@ -28,7 +28,6 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          registry-url: https://registry.npmjs.org
 
       - name: Ensure npm supports trusted publishing
         run: |
@@ -39,9 +38,7 @@ jobs:
         run: npm ci
 
       - name: Verify publish payload
-        run: |
-          npm pack --dry-run > /tmp/npm-pack.txt
-          grep -q "dist/index.js" /tmp/npm-pack.txt
+        run: npm run pack:verify
 
       - name: Version or Publish (stable)
         if: github.ref == 'refs/heads/main'
