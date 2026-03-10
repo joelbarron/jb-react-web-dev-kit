@@ -1,5 +1,13 @@
 # @joelbarron/react-web-dev-kit
 
+## 0.1.10
+
+### Patch Changes
+
+- 14ccaa0: new scripts fixes
+- e943c12: new auth roles
+- d5fa015: fixes
+
 ## 0.1.9
 
 ### Patch Changes
