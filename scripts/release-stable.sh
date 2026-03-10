@@ -26,6 +26,12 @@ fi
 git checkout develop
 git pull --ff-only origin develop
 
+if [ -f ".changeset/pre.json" ]; then
+  echo "Removing .changeset/pre.json from develop to keep stable flow out of prerelease mode."
+  git rm .changeset/pre.json
+  git commit -m "chore: remove prerelease mode file from develop"
+fi
+
 CHANGESET_COUNT="$(git diff --name-only origin/main...HEAD -- ':(glob).changeset/*.md' | wc -l | tr -d ' ')"
 if [ "$CHANGESET_COUNT" -eq 0 ]; then
   echo "No pending changeset found in develop. Starting Changeset wizard..."
@@ -44,6 +50,12 @@ git push origin develop
 
 git checkout main
 git pull --ff-only origin main
+
+if [ -f ".changeset/pre.json" ]; then
+  echo "Removing .changeset/pre.json from main to keep stable releases in normal mode."
+  git rm .changeset/pre.json
+  git commit -m "chore: remove prerelease mode file from main"
+fi
 
 if git merge-base --is-ancestor origin/develop HEAD; then
   echo "main already contains origin/develop. Nothing to merge."
