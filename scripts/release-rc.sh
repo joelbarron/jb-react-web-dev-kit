@@ -36,6 +36,12 @@ fi
 git checkout develop
 git pull --ff-only origin develop
 
+if [ -f ".changeset/pre.json" ]; then
+  echo "Removing .changeset/pre.json from develop to avoid prerelease mode leakage."
+  git rm .changeset/pre.json
+  git commit -m "chore: remove prerelease mode file from develop"
+fi
+
 CHANGESET_COUNT="$(git diff --name-only origin/main...HEAD -- ':(glob).changeset/*.md' | wc -l | tr -d ' ')"
 if [ "$CHANGESET_COUNT" -eq 0 ]; then
   echo "No pending changeset found in develop. Starting Changeset wizard..."
@@ -52,24 +58,20 @@ fi
 
 git push origin develop
 
-git checkout main
-git pull --ff-only origin main
+git checkout next
+git pull --ff-only origin next
 
 if git merge-base --is-ancestor origin/develop HEAD; then
-  echo "main already contains origin/develop. Nothing to merge."
+  echo "next already contains origin/develop. Nothing to merge."
 else
   git merge --no-ff --no-edit origin/develop
 fi
 
-git push origin main
-
-git checkout next
-git pull --ff-only origin next
-
-if git merge-base --is-ancestor origin/main HEAD; then
-  echo "next already contains origin/main. Nothing to merge."
-else
-  git merge --no-ff --no-edit origin/main
+if [ ! -f ".changeset/pre.json" ]; then
+  echo "Re-entering prerelease mode on next (rc)."
+  npx changeset pre enter rc
+  git add .changeset/pre.json
+  git commit -m "chore: enter rc prerelease mode on next"
 fi
 
 git push origin next
