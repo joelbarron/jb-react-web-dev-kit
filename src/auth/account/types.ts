@@ -1,6 +1,12 @@
 import { ReactNode } from 'react';
 
-import { JBAppConfig, JBAuthProfileRoleOption, JBAuthRequiredProfileFields, JBAuthSocialConfig } from '../../config';
+import {
+  JBAppConfig,
+  JBAuthProfilePictureConfig,
+  JBAuthProfileRoleOption,
+  JBAuthRequiredProfileFields,
+  JBAuthSocialConfig
+} from '../../config';
 import { AuthClient } from '../client';
 
 export type AuthAccountSectionKey = 'profile' | 'account' | 'security' | 'profiles' | 'social' | 'subscription';
@@ -33,6 +39,7 @@ export type AuthAccountProfileViewProps = AuthAccountCommonViewProps & {
   allowDefaultProfileEdit?: boolean;
   allowProfilePictureChange?: boolean;
   requiredProfileFields?: Partial<JBAuthRequiredProfileFields>;
+  profilePictureConfig?: Partial<JBAuthProfilePictureConfig>;
   forceEditMode?: boolean;
 };
 
@@ -53,6 +60,7 @@ export type AuthAccountProfilesViewProps = AuthAccountCommonViewProps & {
   allowProfileManagement?: boolean;
   profileRoles?: JBAuthProfileRoleOption[];
   requiredProfileFields?: Partial<JBAuthRequiredProfileFields>;
+  profilePictureConfig?: Partial<JBAuthProfilePictureConfig>;
   onHeaderActionsChange?: AuthAccountHeaderActionsChange;
   onUnsavedChangesChange?: AuthAccountUnsavedChangesChange;
 };

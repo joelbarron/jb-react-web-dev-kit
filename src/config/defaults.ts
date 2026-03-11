@@ -26,6 +26,20 @@ export const defaultJBAppConfig: JBAppConfig = {
     enableOtpAuth: true,
     profileRoles: [],
     defaultProfileRole: undefined,
+    media: {
+      profilePicture: {
+        aspect: 1,
+        targetWidth: 1024,
+        targetHeight: 1024,
+        quality: 0.85,
+        mimeType: 'image/jpeg',
+        outputType: 'data_url',
+        maxBytes: 5 * 1024 * 1024,
+        acceptedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+        minZoom: 1,
+        maxZoom: 3
+      }
+    },
     account: {
       allowProfileManagement: false,
       enableContactVerification: true,

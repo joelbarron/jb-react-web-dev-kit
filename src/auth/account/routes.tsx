@@ -1,6 +1,12 @@
 import { ComponentType, ReactElement } from 'react';
 
-import { JBAppConfig, getAuthAccountConfig, getAuthProfileRoles, getAuthSocialConfig } from '../../config';
+import {
+  JBAppConfig,
+  getAuthAccountConfig,
+  getAuthProfilePictureConfig,
+  getAuthProfileRoles,
+  getAuthSocialConfig
+} from '../../config';
 import { AuthClient } from '../client';
 import { AuthAccountContactView } from './AuthAccountContactView';
 import { AuthAccountProfileView } from './AuthAccountProfileView';
@@ -69,6 +75,7 @@ export function createAuthenticatedAccountRoutes<
   } = options;
 
   const accountConfig = jbWebConfig ? getAuthAccountConfig(jbWebConfig) : undefined;
+  const profilePictureConfig = jbWebConfig ? getAuthProfilePictureConfig(jbWebConfig) : undefined;
   const profileRoles = jbWebConfig ? getAuthProfileRoles(jbWebConfig) : [];
   const socialConfig = jbWebConfig ? getAuthSocialConfig(jbWebConfig) : undefined;
   const resolvedPaths = { ...defaultPaths, ...(paths ?? {}) };
@@ -80,6 +87,7 @@ export function createAuthenticatedAccountRoutes<
         allowDefaultProfileEdit={accountConfig?.allowDefaultProfileEdit}
         allowProfilePictureChange={accountConfig?.allowProfilePictureChange}
         requiredProfileFields={accountConfig?.requiredProfileFields}
+        profilePictureConfig={profilePictureConfig}
       />
     ),
     account: () => (
@@ -101,6 +109,7 @@ export function createAuthenticatedAccountRoutes<
         allowProfileManagement={accountConfig?.allowProfileManagement}
         profileRoles={profileRoles}
         requiredProfileFields={accountConfig?.requiredProfileFields}
+        profilePictureConfig={profilePictureConfig}
       />
     ),
     social: () => (

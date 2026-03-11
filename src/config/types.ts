@@ -10,6 +10,26 @@ export type JBAuthProfileRoleOption = {
   allowSignup?: boolean;
 };
 
+export type JBAuthProfilePictureMimeType = 'image/jpeg' | 'image/png' | 'image/webp';
+export type JBAuthProfilePictureOutputType = 'data_url' | 'blob';
+
+export type JBAuthProfilePictureConfig = {
+  aspect: number;
+  targetWidth: number;
+  targetHeight: number;
+  quality: number;
+  mimeType: JBAuthProfilePictureMimeType;
+  outputType: JBAuthProfilePictureOutputType;
+  maxBytes: number;
+  acceptedMimeTypes: string[];
+  minZoom: number;
+  maxZoom: number;
+};
+
+export type JBAuthMediaConfig = {
+  profilePicture: JBAuthProfilePictureConfig;
+};
+
 export type JBAuthProfileFieldKey =
   | 'firstName'
   | 'lastName1'
@@ -73,6 +93,7 @@ export type JBAppConfig = {
     defaultProfileRole?: string;
     social: JBAuthSocialConfig;
     account: JBAuthAccountConfig;
+    media: JBAuthMediaConfig;
   };
   integrations: Record<string, unknown>;
 };

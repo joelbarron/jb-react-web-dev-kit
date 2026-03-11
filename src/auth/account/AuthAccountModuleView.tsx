@@ -9,7 +9,12 @@ import { useTheme } from '@mui/material/styles';
 import { ReactNode, SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useBeforeUnload, useBlocker, useNavigate, useParams } from 'react-router';
 
-import { getAuthAccountConfig, getAuthProfileRoles, getAuthSocialConfig } from '../../config';
+import {
+  getAuthAccountConfig,
+  getAuthProfilePictureConfig,
+  getAuthProfileRoles,
+  getAuthSocialConfig
+} from '../../config';
 import { JBButton, JBConfirmDialog, JBContentContainer, JBFormHeader } from '../../core';
 import { AuthAccountContactView } from './AuthAccountContactView';
 import { AuthAccountProfileView } from './AuthAccountProfileView';
@@ -90,6 +95,7 @@ export function AuthAccountModuleView(props: AuthAccountModuleViewProps) {
 
   const normalizedBasePath = useMemo(() => normalizeBasePath(basePath), [basePath]);
   const accountConfig = useMemo(() => getAuthAccountConfig(jbWebConfig), [jbWebConfig]);
+  const profilePictureConfig = useMemo(() => getAuthProfilePictureConfig(jbWebConfig), [jbWebConfig]);
   const profileRoles = useMemo(() => getAuthProfileRoles(jbWebConfig), [jbWebConfig]);
   const socialConfig = useMemo(() => getAuthSocialConfig(jbWebConfig), [jbWebConfig]);
   const hasEnabledSocialProviders = useMemo(
@@ -360,6 +366,7 @@ export function AuthAccountModuleView(props: AuthAccountModuleViewProps) {
           allowDefaultProfileEdit={accountConfig.allowDefaultProfileEdit}
           allowProfilePictureChange={accountConfig.allowProfilePictureChange}
           requiredProfileFields={accountConfig.requiredProfileFields}
+          profilePictureConfig={profilePictureConfig}
           onHeaderActionsChange={handleHeaderActionsChange}
           onUnsavedChangesChange={handleUnsavedChangesChange}
         />
@@ -387,6 +394,7 @@ export function AuthAccountModuleView(props: AuthAccountModuleViewProps) {
           allowProfileManagement={accountConfig.allowProfileManagement}
           profileRoles={profileRoles}
           requiredProfileFields={accountConfig.requiredProfileFields}
+          profilePictureConfig={profilePictureConfig}
           onHeaderActionsChange={handleHeaderActionsChange}
           onUnsavedChangesChange={handleUnsavedChangesChange}
         />

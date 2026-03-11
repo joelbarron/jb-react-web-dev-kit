@@ -3,6 +3,8 @@ import { deepMerge } from './merge';
 import {
   JBApiHostConfig,
   JBAuthAccountConfig,
+  JBAuthMediaConfig,
+  JBAuthProfilePictureConfig,
   JBAuthRequiredProfileFields,
   JBAppConfig,
   JBAppConfigOverrides,
@@ -309,4 +311,20 @@ export const getAuthAccountConfig = (config: JBAppConfig): JBAuthAccountConfig =
     ...accountConfig,
     requiredProfileFields
   };
+};
+
+export const getAuthMediaConfig = (config: JBAppConfig): JBAuthMediaConfig => {
+  const mediaConfig = config.auth?.media ?? defaultJBAppConfig.auth.media;
+  return {
+    ...defaultJBAppConfig.auth.media,
+    ...mediaConfig,
+    profilePicture: {
+      ...defaultJBAppConfig.auth.media.profilePicture,
+      ...(mediaConfig.profilePicture || {})
+    }
+  };
+};
+
+export const getAuthProfilePictureConfig = (config: JBAppConfig): JBAuthProfilePictureConfig => {
+  return getAuthMediaConfig(config).profilePicture;
 };

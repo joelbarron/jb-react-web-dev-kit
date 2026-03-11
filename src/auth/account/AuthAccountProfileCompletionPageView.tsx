@@ -6,7 +6,7 @@ import { useTheme } from '@mui/material/styles';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { defaultJBAppConfig, getAuthAccountConfig } from '../../config';
+import { defaultJBAppConfig, getAuthAccountConfig, getAuthProfilePictureConfig } from '../../config';
 import { JBButton, JBContentContainer, JBFormHeader } from '../../core';
 import { AuthAccountProfileView } from './AuthAccountProfileView';
 import { resolveDefaultProfileCompletionStatus } from './profileCompletion';
@@ -37,6 +37,10 @@ export function AuthAccountProfileCompletionPageView(
   const [completionCheckError, setCompletionCheckError] = useState<string | null>(null);
   const accountConfig = useMemo(
     () => getAuthAccountConfig(jbWebConfig ?? defaultJBAppConfig),
+    [jbWebConfig]
+  );
+  const profilePictureConfig = useMemo(
+    () => getAuthProfilePictureConfig(jbWebConfig ?? defaultJBAppConfig),
     [jbWebConfig]
   );
   const handleProfileSaveSuccess = useCallback(() => {
@@ -181,6 +185,7 @@ export function AuthAccountProfileCompletionPageView(
             allowDefaultProfileEdit={accountConfig.allowDefaultProfileEdit || accountConfig.ensureProfileCompletion}
             allowProfilePictureChange={accountConfig.allowProfilePictureChange}
             requiredProfileFields={accountConfig.requiredProfileFields}
+            profilePictureConfig={profilePictureConfig}
             forceEditMode
             onHeaderActionsChange={setHeaderActions}
             onSaveSuccess={handleProfileSaveSuccess}

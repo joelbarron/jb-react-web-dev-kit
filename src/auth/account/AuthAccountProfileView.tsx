@@ -9,14 +9,14 @@ import Typography from '@mui/material/Typography';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { GENDER_SELECT_OPTIONS } from '../constants';
+import { useJBImageCropper } from '../../media';
 import { AccountFeedbackSnackbars } from './AccountFeedbackSnackbars';
 import { AuthAccountProfileViewProps } from './types';
 import {
   asRecord,
   findDefaultProfile,
   normalizeProfilesList,
-  pickString,
-  toBase64DataUrl
+  pickString
 } from './utils';
 
 type ProfileFormState = {
@@ -48,6 +48,19 @@ const DEFAULT_REQUIRED_PROFILE_FIELDS = {
   label: false
 };
 
+const DEFAULT_PROFILE_PICTURE_CONFIG = {
+  aspect: 1,
+  targetWidth: 1024,
+  targetHeight: 1024,
+  quality: 0.85,
+  mimeType: 'image/jpeg' as const,
+  outputType: 'data_url' as const,
+  maxBytes: 5 * 1024 * 1024,
+  acceptedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+  minZoom: 1,
+  maxZoom: 3
+};
+
 const normalizeProfileForm = (profile: Record<string, unknown>): ProfileFormState => ({
   firstName: pickString(profile, ['first_name', 'firstName']),
   lastName1: pickString(profile, ['last_name_1', 'lastName1']),
@@ -66,6 +79,7 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
     allowDefaultProfileEdit = true,
     allowProfilePictureChange = true,
     requiredProfileFields,
+    profilePictureConfig,
     forceEditMode = false
   } = props;
 
@@ -75,23 +89,37 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<number | null>(null);
   const [pictureUrl, setPictureUrl] = useState<string>('');
-  const [selectedPicture, setSelectedPicture] = useState<File | null>(null);
+  const [selectedPicture, setSelectedPicture] = useState<{ dataUrl: string; fileName: string } | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [formState, setFormState] = useState<ProfileFormState>(EMPTY_PROFILE_FORM);
   const [originalFormState, setOriginalFormState] = useState<ProfileFormState>(EMPTY_PROFILE_FORM);
   const [fieldErrors, setFieldErrors] = useState<ProfileFormErrors>({});
-  const selectedPicturePreviewUrl = useMemo(() => {
-    if (!selectedPicture) {
-      return '';
-    }
-    return URL.createObjectURL(selectedPicture);
-  }, [selectedPicture]);
+  const resolvedProfilePictureConfig = useMemo(
+    () => ({
+      ...DEFAULT_PROFILE_PICTURE_CONFIG,
+      ...(profilePictureConfig || {}),
+      outputType: 'data_url' as const
+    }),
+    [profilePictureConfig]
+  );
   const resolvedRequiredFields = useMemo(() => {
     return {
       ...DEFAULT_REQUIRED_PROFILE_FIELDS,
       ...(requiredProfileFields ?? {})
     };
   }, [requiredProfileFields]);
+  const pictureCropper = useJBImageCropper({
+    aspect: resolvedProfilePictureConfig.aspect,
+    targetWidth: resolvedProfilePictureConfig.targetWidth,
+    targetHeight: resolvedProfilePictureConfig.targetHeight,
+    quality: resolvedProfilePictureConfig.quality,
+    mimeType: resolvedProfilePictureConfig.mimeType,
+    outputType: 'data_url',
+    minZoom: resolvedProfilePictureConfig.minZoom,
+    maxZoom: resolvedProfilePictureConfig.maxZoom,
+    title: 'Recortar foto de perfil',
+    helperText: 'Ajusta la fotografía para guardarla en formato cuadrado.'
+  });
 
   const hasProfileChanges = useMemo(
     () =>
@@ -155,14 +183,6 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
   useEffect(() => {
     void reloadFromServer();
   }, [reloadFromServer]);
-
-  useEffect(() => {
-    return () => {
-      if (selectedPicturePreviewUrl) {
-        URL.revokeObjectURL(selectedPicturePreviewUrl);
-      }
-    };
-  }, [selectedPicturePreviewUrl]);
 
   useEffect(() => {
     if (!onUnsavedChangesChange) {
@@ -260,11 +280,10 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
         });
       }
 
-      if (allowProfilePictureChange && selectedPicture) {
-        const encodedPicture = await toBase64DataUrl(selectedPicture);
+      if (allowProfilePictureChange && selectedPicture?.dataUrl) {
         await authClient.updateProfilePicture({
           profile: profileId,
-          picture: encodedPicture
+          picture: selectedPicture.dataUrl
         });
       }
 
@@ -313,6 +332,44 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
     setErrorMessage(null);
     setSuccessMessage(null);
   }, [originalFormState]);
+
+  const handlePictureInputChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0] ?? null;
+      if (!file) {
+        return;
+      }
+
+      try {
+        const cropResult = await pictureCropper.selectImageFile(file, {
+          validation: {
+            maxBytes: resolvedProfilePictureConfig.maxBytes,
+            acceptedMimeTypes: resolvedProfilePictureConfig.acceptedMimeTypes
+          }
+        });
+
+        if (!cropResult) {
+          return;
+        }
+
+        setSelectedPicture({
+          dataUrl: cropResult.dataUrl,
+          fileName: cropResult.fileName
+        });
+        setSuccessMessage(null);
+        setErrorMessage(null);
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : 'No se pudo procesar la foto seleccionada.');
+      } finally {
+        event.target.value = '';
+      }
+    },
+    [
+      pictureCropper,
+      resolvedProfilePictureConfig.acceptedMimeTypes,
+      resolvedProfilePictureConfig.maxBytes
+    ]
+  );
 
   const shouldRenderInternalActions = !onHeaderActionsChange;
 
@@ -416,7 +473,7 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
     <Stack spacing={3}>
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', md: 'center' }}>
         <Avatar
-          src={selectedPicturePreviewUrl || pictureUrl || undefined}
+          src={selectedPicture?.dataUrl || pictureUrl || undefined}
           sx={{ width: 80, height: 80 }}
         />
         <Stack spacing={1}>
@@ -428,9 +485,7 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
                 type="file"
                 accept="image/*"
                 onChange={(event) => {
-                  const file = event.target.files?.[0] ?? null;
-                  setSelectedPicture(file);
-                  setSuccessMessage(null);
+                  void handlePictureInputChange(event);
                 }}
               />
             </Button>
@@ -441,7 +496,7 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
           )}
           {selectedPicture ? (
             <Typography variant="caption" color="text.secondary">
-              Archivo seleccionado: {selectedPicture.name}
+              Archivo seleccionado: {selectedPicture.fileName}
             </Typography>
           ) : null}
         </Stack>
@@ -581,6 +636,7 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
         onCloseSuccess={() => setSuccessMessage(null)}
         onCloseError={() => setErrorMessage(null)}
       />
+      {pictureCropper.cropDialog}
     </Stack>
   );
 }

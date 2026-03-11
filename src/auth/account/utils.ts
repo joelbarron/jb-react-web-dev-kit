@@ -28,14 +28,6 @@ export const pickString = (source: Record<string, unknown>, keys: string[]): str
   return asString(pickValue(source, keys)).trim();
 };
 
-export const toBase64DataUrl = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(new Error('No se pudo leer el archivo seleccionado.'));
-    reader.readAsDataURL(file);
-  });
-
 export const toSnakeCaseProofFields = (tokens: {
   emailVerificationProofToken?: string;
   phoneVerificationProofToken?: string;

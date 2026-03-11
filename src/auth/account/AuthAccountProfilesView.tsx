@@ -10,16 +10,17 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 
 import { JBConfirmDialog } from '../../core';
 import { JBAuthRequiredProfileFields } from '../../config';
+import { useJBImageCropper } from '../../media';
 import { GENDERS, GENDER_SELECT_OPTIONS } from '../constants';
 import { parseAuthError } from '../forms/errorParser';
 import { AccountFeedbackSnackbars } from './AccountFeedbackSnackbars';
 import { AuthAccountProfilesViewProps } from './types';
-import { asRecord, pickString, toBase64DataUrl } from './utils';
+import { asRecord, pickString } from './utils';
 
 type ProfileFormState = {
   first_name: string;
@@ -52,6 +53,19 @@ const DEFAULT_REQUIRED_PROFILE_FIELDS: JBAuthRequiredProfileFields = {
   birthday: true,
   gender: true,
   label: false
+};
+
+const DEFAULT_PROFILE_PICTURE_CONFIG = {
+  aspect: 1,
+  targetWidth: 1024,
+  targetHeight: 1024,
+  quality: 0.85,
+  mimeType: 'image/jpeg' as const,
+  outputType: 'data_url' as const,
+  maxBytes: 5 * 1024 * 1024,
+  acceptedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+  minZoom: 1,
+  maxZoom: 3
 };
 
 const createProfileFormSchema = (requiredProfileFields: JBAuthRequiredProfileFields) => z.object({
@@ -190,6 +204,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
     allowProfileManagement = false,
     profileRoles = [],
     requiredProfileFields,
+    profilePictureConfig,
     onHeaderActionsChange,
     onUnsavedChangesChange
   } = props;
@@ -201,7 +216,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [formState, setFormState] = useState<ProfileFormState>(EMPTY_PROFILE_FORM);
   const [profilePictureUrl, setProfilePictureUrl] = useState('');
-  const [selectedPictureFile, setSelectedPictureFile] = useState<File | null>(null);
+  const [selectedPicture, setSelectedPicture] = useState<{ dataUrl: string; fileName: string } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<ProfileFormErrors>({});
@@ -213,6 +228,26 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
     }),
     [requiredProfileFields]
   );
+  const resolvedProfilePictureConfig = useMemo(
+    () => ({
+      ...DEFAULT_PROFILE_PICTURE_CONFIG,
+      ...(profilePictureConfig || {}),
+      outputType: 'data_url' as const
+    }),
+    [profilePictureConfig]
+  );
+  const pictureCropper = useJBImageCropper({
+    aspect: resolvedProfilePictureConfig.aspect,
+    targetWidth: resolvedProfilePictureConfig.targetWidth,
+    targetHeight: resolvedProfilePictureConfig.targetHeight,
+    quality: resolvedProfilePictureConfig.quality,
+    mimeType: resolvedProfilePictureConfig.mimeType,
+    outputType: 'data_url',
+    minZoom: resolvedProfilePictureConfig.minZoom,
+    maxZoom: resolvedProfilePictureConfig.maxZoom,
+    title: 'Recortar foto de perfil',
+    helperText: 'Ajusta la fotografía para guardarla en formato cuadrado.'
+  });
   const profileFormSchema = useMemo(
     () => createProfileFormSchema(resolvedRequiredFields),
     [resolvedRequiredFields]
@@ -267,7 +302,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
     [formState]
   );
   const hasUnsavedChanges = useMemo(() => {
-    if (selectedPictureFile) {
+    if (selectedPicture) {
       return true;
     }
     if (!selectedProfileId) {
@@ -282,7 +317,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
       formState.label !== selectedProfileFormState.label ||
       formState.role !== selectedProfileFormState.role
     );
-  }, [formState, hasFormValues, selectedPictureFile, selectedProfileFormState, selectedProfileId]);
+  }, [formState, hasFormValues, selectedPicture, selectedProfileFormState, selectedProfileId]);
   const roleOptions = useMemo(() => {
     if (profileRoles.length) {
       const signupRoles = profileRoles.filter((role) => Boolean(role.allowSignup));
@@ -331,23 +366,8 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
     setFormState(normalizeProfileForm(selectedProfile));
     setFieldErrors({});
     setProfilePictureUrl(pickString(selectedProfile, ['picture', 'photoURL']));
-    setSelectedPictureFile(null);
+    setSelectedPicture(null);
   }, [selectedProfile]);
-
-  const selectedPicturePreviewUrl = useMemo(() => {
-    if (!selectedPictureFile) {
-      return '';
-    }
-    return URL.createObjectURL(selectedPictureFile);
-  }, [selectedPictureFile]);
-
-  useEffect(() => {
-    return () => {
-      if (selectedPicturePreviewUrl) {
-        URL.revokeObjectURL(selectedPicturePreviewUrl);
-      }
-    };
-  }, [selectedPicturePreviewUrl]);
 
   useEffect(() => {
     if (!allowProfileManagement && onHeaderActionsChange) {
@@ -377,7 +397,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
     setFormState(EMPTY_PROFILE_FORM);
     setFieldErrors({});
     setProfilePictureUrl('');
-    setSelectedPictureFile(null);
+    setSelectedPicture(null);
     setErrorMessage(null);
     setSuccessMessage(null);
   }, []);
@@ -397,6 +417,44 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
       setSuccessMessage(null);
     },
     []
+  );
+
+  const onPictureChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0] ?? null;
+      if (!file) {
+        return;
+      }
+
+      try {
+        const cropResult = await pictureCropper.selectImageFile(file, {
+          validation: {
+            maxBytes: resolvedProfilePictureConfig.maxBytes,
+            acceptedMimeTypes: resolvedProfilePictureConfig.acceptedMimeTypes
+          }
+        });
+
+        if (!cropResult) {
+          return;
+        }
+
+        setSelectedPicture({
+          dataUrl: cropResult.dataUrl,
+          fileName: cropResult.fileName
+        });
+        setSuccessMessage(null);
+        setErrorMessage(null);
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : 'No se pudo procesar la foto seleccionada.');
+      } finally {
+        event.target.value = '';
+      }
+    },
+    [
+      pictureCropper,
+      resolvedProfilePictureConfig.acceptedMimeTypes,
+      resolvedProfilePictureConfig.maxBytes
+    ]
   );
 
   const onSave = useCallback(async () => {
@@ -424,8 +482,8 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
       const payload: Record<string, unknown> = {
         ...formState
       };
-      if (selectedPictureFile) {
-        payload.picture = await toBase64DataUrl(selectedPictureFile);
+      if (selectedPicture?.dataUrl) {
+        payload.picture = selectedPicture.dataUrl;
       }
 
       if (selectedProfileId) {
@@ -436,6 +494,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
         setSuccessMessage('Perfil creado correctamente.');
       }
       setFieldErrors({});
+      setSelectedPicture(null);
       await loadProfiles();
     } catch (error) {
       const parsed = parseAuthError(error);
@@ -476,7 +535,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
     } finally {
       setIsSaving(false);
     }
-  }, [authClient, formState, loadProfiles, profileFormSchema, selectedPictureFile, selectedProfileId]);
+  }, [authClient, formState, loadProfiles, profileFormSchema, selectedPicture, selectedProfileId]);
 
   const onDelete = useCallback(async () => {
     if (!selectedProfileId) {
@@ -489,6 +548,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
       setIsFormVisible(false);
       setSelectedProfileId(null);
       setFormState(EMPTY_PROFILE_FORM);
+      setSelectedPicture(null);
       await loadProfiles();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'No se pudo eliminar el perfil.');
@@ -700,7 +760,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
               </Typography>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }}>
                 <Avatar
-                  src={selectedPicturePreviewUrl || profilePictureUrl || undefined}
+                  src={selectedPicture?.dataUrl || profilePictureUrl || undefined}
                   sx={{ width: 72, height: 72 }}
                 />
                 <Stack spacing={0.75}>
@@ -711,14 +771,13 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
                       type="file"
                       accept="image/*"
                       onChange={(event) => {
-                        const file = event.target.files?.[0] ?? null;
-                        setSelectedPictureFile(file);
+                        void onPictureChange(event);
                       }}
                     />
                   </Button>
-                  {selectedPictureFile ? (
+                  {selectedPicture ? (
                     <Typography variant="caption" color="text.secondary">
-                      Archivo seleccionado: {selectedPictureFile.name}
+                      Archivo seleccionado: {selectedPicture.fileName}
                     </Typography>
                   ) : (
                     <Typography variant="caption" color="text.secondary">
@@ -864,6 +923,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
         onCloseSuccess={() => setSuccessMessage(null)}
         onCloseError={() => setErrorMessage(null)}
       />
+      {pictureCropper.cropDialog}
     </Stack>
   );
 }

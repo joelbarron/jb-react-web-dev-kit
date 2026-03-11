@@ -4,5 +4,6 @@ export * from './core';
 export * from './forms';
 export * from './grid';
 export * from './hooks';
+export * from './media';
 export * from './query';
 export * from './utils';
