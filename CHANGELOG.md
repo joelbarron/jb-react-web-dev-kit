@@ -1,5 +1,11 @@
 # @joelbarron/react-web-dev-kit
 
+## 0.1.11
+
+### Patch Changes
+
+- f8ea63f: Changes in auth account and image crop
+
 ## 0.1.10
 
 ### Patch Changes
