@@ -299,6 +299,7 @@ function FuseOtpSignUpForm(props: FuseOtpSignUpFormProps) {
 
 type AlternativesProps = {
   onSmsClick?: () => void;
+  showSmsOption?: boolean;
   socialProviders?: EnabledSocialProvider[];
   onSocialClick?: (provider: SocialProvider) => void;
   socialLoadingProvider?: SocialProvider | null;
@@ -306,7 +307,12 @@ type AlternativesProps = {
 };
 
 function FuseAuthAlternativesSection(props: AlternativesProps) {
-  const { onSmsClick, socialProviders = [], onSocialClick, socialLoadingProvider, socialError } = props;
+  const { onSmsClick, showSmsOption = true, socialProviders = [], onSocialClick, socialLoadingProvider, socialError } = props;
+  const hasAlternatives = socialProviders.length > 0 || showSmsOption;
+
+  if (!hasAlternatives) {
+    return null;
+  }
 
   return (
     <>
@@ -339,14 +345,16 @@ function FuseAuthAlternativesSection(props: AlternativesProps) {
           />
         ))}
 
-        <AuthSocialProviderButton
-          aria-label="SMS"
-          provider="sms"
-          disabled={Boolean(socialLoadingProvider)}
-          onClick={onSmsClick}
->
-          SMS
-        </AuthSocialProviderButton>
+        {showSmsOption ? (
+          <AuthSocialProviderButton
+            aria-label="SMS"
+            provider="sms"
+            disabled={Boolean(socialLoadingProvider)}
+            onClick={onSmsClick}
+          >
+            SMS
+          </AuthSocialProviderButton>
+        ) : null}
       </Box>
 
       {socialError ? (
@@ -572,6 +580,7 @@ type CreateFuseAuthViewsOptions = {
   defaultSignUpRole?: string;
   socialConfig?: JBAuthSocialConfig;
   showDebugSocial?: boolean;
+  enableOtpAuth?: boolean;
   onSignUpSuccess?: (values: {
     email: string;
     detail?: string;
@@ -587,6 +596,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
     defaultSignUpRole,
     socialConfig,
     showDebugSocial = false,
+    enableOtpAuth = true,
     onSignUpSuccess,
   } = options;
 
@@ -615,6 +625,12 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
     );
     const magicLinkToken = useMemo(() => (searchParams.get("mlt") || "").trim(), [searchParams]);
     const isAuthFlowBusy = socialLoadingProvider !== null;
+
+    useEffect(() => {
+      if (!enableOtpAuth && mode === "otp") {
+        setMode("password");
+      }
+    }, [enableOtpAuth, mode]);
 
     useEffect(() => {
       if (!magicLinkToken) {
@@ -762,7 +778,8 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
                 disabled={isAuthFlowBusy}
               />
               <FuseAuthAlternativesSection
-                onSmsClick={() => setMode("otp")}
+                onSmsClick={enableOtpAuth ? () => setMode("otp") : undefined}
+                showSmsOption={enableOtpAuth}
                 socialProviders={enabledSocialProviders}
                 onSocialClick={onSocialClick}
                 socialLoadingProvider={socialLoadingProvider}
@@ -797,6 +814,12 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
       [socialConfig, showDebugSocial]
     );
     const isAuthFlowBusy = socialLoadingProvider !== null;
+
+    useEffect(() => {
+      if (!enableOtpAuth && mode === "otp") {
+        setMode("password");
+      }
+    }, [enableOtpAuth, mode]);
 
     const onSocialClick = useCallback(
       async (provider: SocialProvider) => {
@@ -888,7 +911,8 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
                 disabled={isAuthFlowBusy}
               />
               <FuseAuthAlternativesSection
-                onSmsClick={() => setMode("otp")}
+                onSmsClick={enableOtpAuth ? () => setMode("otp") : undefined}
+                showSmsOption={enableOtpAuth}
                 socialProviders={enabledSocialProviders}
                 onSocialClick={onSocialClick}
                 socialLoadingProvider={socialLoadingProvider}

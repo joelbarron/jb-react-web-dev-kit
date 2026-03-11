@@ -2,21 +2,27 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { AuthClient } from './client';
 import {
+  ContactVerificationRequestPayload,
+  ContactVerificationVerifyPayload,
+  EmailAvailabilityPayload,
   AccountUpdatePayload,
   DeleteAccountPayload,
   JbDrfWebAuthResponse,
   LinkSocialPayload,
   LoginBasicPayload,
   LoginSocialPayload,
+  PhoneAvailabilityPayload,
   SwitchProfilePayload,
-  UnlinkSocialPayload
+  UnlinkSocialPayload,
+  UsernameAvailabilityPayload
 } from './types';
 
 export const authQueryKeys = {
   all: ['auth'] as const,
   me: () => [...authQueryKeys.all, 'me'] as const,
   social: () => [...authQueryKeys.all, 'social'] as const,
-  account: () => [...authQueryKeys.all, 'account'] as const
+  account: () => [...authQueryKeys.all, 'account'] as const,
+  accountSocialAccounts: () => [...authQueryKeys.account(), 'social-accounts'] as const
 };
 
 export const createAuthQueryHooks = (
@@ -28,6 +34,12 @@ export const createAuthQueryHooks = (
     | 'linkSocial'
     | 'unlinkSocial'
     | 'updateAccount'
+    | 'checkEmailAvailability'
+    | 'checkPhoneAvailability'
+    | 'checkUsernameAvailability'
+    | 'requestContactVerification'
+    | 'verifyContactVerification'
+    | 'getAccountSocialAccounts'
     | 'deleteAccount'
     | 'switchProfile'
     | 'logout'
@@ -102,6 +114,38 @@ export const createAuthQueryHooks = (
     });
   };
 
+  const useAccountSocialAccountsQuery = (enabled = true) =>
+    useQuery({
+      queryKey: authQueryKeys.accountSocialAccounts(),
+      queryFn: () => authClient.getAccountSocialAccounts(),
+      enabled
+    });
+
+  const useEmailAvailabilityMutation = () =>
+    useMutation({
+      mutationFn: (payload: EmailAvailabilityPayload) => authClient.checkEmailAvailability(payload)
+    });
+
+  const usePhoneAvailabilityMutation = () =>
+    useMutation({
+      mutationFn: (payload: PhoneAvailabilityPayload) => authClient.checkPhoneAvailability(payload)
+    });
+
+  const useUsernameAvailabilityMutation = () =>
+    useMutation({
+      mutationFn: (payload: UsernameAvailabilityPayload) => authClient.checkUsernameAvailability(payload)
+    });
+
+  const useRequestContactVerificationMutation = () =>
+    useMutation({
+      mutationFn: (payload: ContactVerificationRequestPayload) => authClient.requestContactVerification(payload)
+    });
+
+  const useVerifyContactVerificationMutation = () =>
+    useMutation({
+      mutationFn: (payload: ContactVerificationVerifyPayload) => authClient.verifyContactVerification(payload)
+    });
+
   const useDeleteAccountMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -110,6 +154,7 @@ export const createAuthQueryHooks = (
         queryClient.setQueryData<JbDrfWebAuthResponse | null>(authQueryKeys.me(), null);
         await queryClient.invalidateQueries({ queryKey: authQueryKeys.me() });
         await queryClient.invalidateQueries({ queryKey: authQueryKeys.account() });
+        await queryClient.invalidateQueries({ queryKey: authQueryKeys.accountSocialAccounts() });
       }
     });
   };
@@ -134,6 +179,12 @@ export const createAuthQueryHooks = (
     useLinkSocialMutation,
     useUnlinkSocialMutation,
     useAccountUpdateMutation,
+    useAccountSocialAccountsQuery,
+    useEmailAvailabilityMutation,
+    usePhoneAvailabilityMutation,
+    useUsernameAvailabilityMutation,
+    useRequestContactVerificationMutation,
+    useVerifyContactVerificationMutation,
     useDeleteAccountMutation,
     useSwitchProfileMutation,
     useLogoutMutation

@@ -23,8 +23,27 @@ export const defaultJBAppConfig: JBAppConfig = {
   auth: {
     apiBasePath: '/authentication',
     showDebugSocial: false,
+    enableOtpAuth: true,
     profileRoles: [],
     defaultProfileRole: undefined,
+    account: {
+      allowProfileManagement: false,
+      enableContactVerification: true,
+      allowDeleteAccount: false,
+      allowAccountEdit: true,
+      allowDefaultProfileEdit: true,
+      allowProfilePictureChange: true,
+      requireProfileBirthday: true,
+      requiredProfileFields: {
+        first_name: true,
+        last_name_1: true,
+        last_name_2: false,
+        birthday: true,
+        gender: true,
+        label: false
+      },
+      subscriptionUrl: undefined
+    },
     social: {
       google: {
         enabled: false

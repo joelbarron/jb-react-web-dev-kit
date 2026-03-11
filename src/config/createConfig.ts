@@ -2,6 +2,8 @@ import { defaultJBAppConfig } from './defaults';
 import { deepMerge } from './merge';
 import {
   JBApiHostConfig,
+  JBAuthAccountConfig,
+  JBAuthRequiredProfileFields,
   JBAppConfig,
   JBAppConfigOverrides,
   JBAppStage,
@@ -149,6 +151,14 @@ export const createJBWebConfigFromEnv = (
   const googleEnabled = parseBooleanEnv(runtimeEnv.VITE_AUTH_SOCIAL_GOOGLE_ENABLED);
   const facebookEnabled = parseBooleanEnv(runtimeEnv.VITE_AUTH_SOCIAL_FACEBOOK_ENABLED);
   const appleEnabled = parseBooleanEnv(runtimeEnv.VITE_AUTH_SOCIAL_APPLE_ENABLED);
+  const enableOtpAuth = parseBooleanEnv(runtimeEnv.VITE_AUTH_ENABLE_OTP_AUTH);
+  const allowProfileManagement = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ALLOW_PROFILE_MANAGEMENT);
+  const enableContactVerification = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ENABLE_CONTACT_VERIFICATION);
+  const allowDeleteAccount = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ALLOW_DELETE_ACCOUNT);
+  const allowAccountEdit = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ALLOW_ACCOUNT_EDIT);
+  const allowDefaultProfileEdit = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ALLOW_DEFAULT_PROFILE_EDIT);
+  const allowProfilePictureChange = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ALLOW_PROFILE_PICTURE_CHANGE);
+  const requireProfileBirthday = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_REQUIRE_PROFILE_BIRTHDAY);
   const apiHostOverrides: Partial<Record<JBAppStage, string>> = {};
 
   const setApiHost = (stage: JBAppStage, value?: string) => {
@@ -179,6 +189,33 @@ export const createJBWebConfigFromEnv = (
     auth: {
       apiBasePath: runtimeEnv.VITE_AUTH_BASE_PATH,
       showDebugSocial: parseBooleanEnv(runtimeEnv.VITE_AUTH_SHOW_DEBUG_SOCIAL),
+      ...(typeof enableOtpAuth === 'boolean' ? { enableOtpAuth } : {}),
+      account: {
+        ...(typeof allowProfileManagement === 'boolean'
+          ? { allowProfileManagement }
+          : {}),
+        ...(typeof enableContactVerification === 'boolean'
+          ? { enableContactVerification }
+          : {}),
+        ...(typeof allowDeleteAccount === 'boolean'
+          ? { allowDeleteAccount }
+          : {}),
+        ...(typeof allowAccountEdit === 'boolean'
+          ? { allowAccountEdit }
+          : {}),
+        ...(typeof allowDefaultProfileEdit === 'boolean'
+          ? { allowDefaultProfileEdit }
+          : {}),
+        ...(typeof allowProfilePictureChange === 'boolean'
+          ? { allowProfilePictureChange }
+          : {}),
+        ...(typeof requireProfileBirthday === 'boolean'
+          ? { requireProfileBirthday }
+          : {}),
+        ...(runtimeEnv.VITE_AUTH_ACCOUNT_SUBSCRIPTION_URL
+          ? { subscriptionUrl: runtimeEnv.VITE_AUTH_ACCOUNT_SUBSCRIPTION_URL }
+          : {})
+      },
       social: {
         google: {
           ...(typeof googleEnabled === 'boolean' ? { enabled: googleEnabled } : {}),
@@ -242,4 +279,38 @@ export const getAuthSocialConfig = (config: JBAppConfig): JBAuthSocialConfig => 
 
 export const getAuthShowDebugSocial = (config: JBAppConfig): boolean => {
   return config.auth?.showDebugSocial ?? defaultJBAppConfig.auth.showDebugSocial;
+};
+
+export const getAuthEnableOtpAuth = (config: JBAppConfig): boolean => {
+  return config.auth?.enableOtpAuth ?? defaultJBAppConfig.auth.enableOtpAuth;
+};
+
+export const getAuthRequiredProfileFields = (
+  accountConfig?: Partial<JBAuthAccountConfig>
+): JBAuthRequiredProfileFields => {
+  const defaultRequiredProfileFields = defaultJBAppConfig.auth.account.requiredProfileFields;
+  const customRequiredProfileFields = accountConfig?.requiredProfileFields ?? {};
+  const resolvedBirthdayRequired =
+    typeof customRequiredProfileFields.birthday === 'boolean'
+      ? customRequiredProfileFields.birthday
+      : (typeof accountConfig?.requireProfileBirthday === 'boolean'
+        ? accountConfig.requireProfileBirthday
+        : defaultRequiredProfileFields.birthday);
+
+  return {
+    ...defaultRequiredProfileFields,
+    ...customRequiredProfileFields,
+    birthday: resolvedBirthdayRequired
+  };
+};
+
+export const getAuthAccountConfig = (config: JBAppConfig): JBAuthAccountConfig => {
+  const accountConfig = config.auth?.account ?? defaultJBAppConfig.auth.account;
+  const requiredProfileFields = getAuthRequiredProfileFields(accountConfig);
+  return {
+    ...defaultJBAppConfig.auth.account,
+    ...accountConfig,
+    requiredProfileFields,
+    requireProfileBirthday: requiredProfileFields.birthday
+  };
 };

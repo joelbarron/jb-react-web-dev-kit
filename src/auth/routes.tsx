@@ -3,6 +3,7 @@ import {
   JBAppConfig,
   JBAuthProfileRoleOption,
   getAuthDefaultProfileRole,
+  getAuthEnableOtpAuth,
   getAuthShowDebugSocial,
   getAuthSignupProfileRoles,
   getAuthSocialConfig
@@ -115,6 +116,7 @@ export function createAuthRoutes<TMeta extends Record<string, unknown> = Record<
   const resolvedDefaultSignUpRole = defaultSignUpRole ?? (jbWebConfig ? getAuthDefaultProfileRole(jbWebConfig) : undefined);
   const resolvedSocialConfig = jbWebConfig ? getAuthSocialConfig(jbWebConfig) : undefined;
   const resolvedShowDebugSocial = jbWebConfig ? getAuthShowDebugSocial(jbWebConfig) : false;
+  const resolvedEnableOtpAuth = jbWebConfig ? getAuthEnableOtpAuth(jbWebConfig) : true;
   const resolvedPaths = { ...defaultPaths, ...(paths ?? {}) };
   const accountConfirmationRoutePath = normalizePath(basePath, resolvedPaths.accountConfirmation);
   const accountConfirmationPath = `/${accountConfirmationRoutePath}`;
@@ -128,6 +130,7 @@ export function createAuthRoutes<TMeta extends Record<string, unknown> = Record<
             defaultSignUpRole: resolvedDefaultSignUpRole,
             socialConfig: resolvedSocialConfig,
             showDebugSocial: resolvedShowDebugSocial,
+            enableOtpAuth: resolvedEnableOtpAuth,
             onSignUpSuccess
           });
 

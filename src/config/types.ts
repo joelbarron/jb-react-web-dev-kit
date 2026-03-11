@@ -10,6 +10,16 @@ export type JBAuthProfileRoleOption = {
   allowSignup?: boolean;
 };
 
+export type JBAuthProfileFieldKey =
+  | 'first_name'
+  | 'last_name_1'
+  | 'last_name_2'
+  | 'birthday'
+  | 'gender'
+  | 'label';
+
+export type JBAuthRequiredProfileFields = Record<JBAuthProfileFieldKey, boolean>;
+
 export type JBSocialProviderName = 'google' | 'facebook' | 'apple';
 
 export type JBAuthSocialProviderConfig = {
@@ -26,6 +36,18 @@ export type JBAuthSocialProviderConfig = {
 };
 
 export type JBAuthSocialConfig = Record<JBSocialProviderName, JBAuthSocialProviderConfig>;
+
+export type JBAuthAccountConfig = {
+  allowProfileManagement: boolean;
+  enableContactVerification: boolean;
+  allowDeleteAccount: boolean;
+  allowAccountEdit: boolean;
+  allowDefaultProfileEdit: boolean;
+  allowProfilePictureChange: boolean;
+  requireProfileBirthday: boolean;
+  requiredProfileFields: JBAuthRequiredProfileFields;
+  subscriptionUrl?: string;
+};
 
 export type JBAppConfig = {
   debug: boolean;
@@ -45,9 +67,11 @@ export type JBAppConfig = {
   auth: {
     apiBasePath: string;
     showDebugSocial: boolean;
+    enableOtpAuth: boolean;
     profileRoles: JBAuthProfileRoleOption[];
     defaultProfileRole?: string;
     social: JBAuthSocialConfig;
+    account: JBAuthAccountConfig;
   };
   integrations: Record<string, unknown>;
 };
