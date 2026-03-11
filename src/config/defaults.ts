@@ -33,6 +33,8 @@ export const defaultJBAppConfig: JBAppConfig = {
       allowAccountEdit: true,
       allowDefaultProfileEdit: true,
       allowProfilePictureChange: true,
+      ensureProfileCompletion: false,
+      profileCompletionPath: '/account/complete-profile',
       requiredProfileFields: {
         firstName: true,
         lastName1: true,

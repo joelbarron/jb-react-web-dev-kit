@@ -62,9 +62,11 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
     authClient,
     onHeaderActionsChange,
     onUnsavedChangesChange,
+    onSaveSuccess,
     allowDefaultProfileEdit = true,
     allowProfilePictureChange = true,
-    requiredProfileFields
+    requiredProfileFields,
+    forceEditMode = false
   } = props;
 
   const [isLoading, setIsLoading] = useState(true);
@@ -141,14 +143,14 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
       setPictureUrl(pickString(profileDetail, ['picture', 'photoURL']));
       setSelectedPicture(null);
       setFieldErrors({});
-      setIsEditMode(false);
+      setIsEditMode(Boolean(forceEditMode && allowDefaultProfileEdit));
       setErrorMessage(null);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'No se pudo cargar la información del perfil.');
     } finally {
       setIsLoading(false);
     }
-  }, [authClient]);
+  }, [allowDefaultProfileEdit, authClient, forceEditMode]);
 
   useEffect(() => {
     void reloadFromServer();
@@ -267,6 +269,7 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
       }
 
       await reloadFromServer();
+      onSaveSuccess?.();
       setSuccessMessage('Perfil actualizado correctamente.');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'No se pudo guardar el perfil.');
@@ -282,6 +285,7 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
     hasPictureChanges,
     hasProfileChanges,
     isEditMode,
+    onSaveSuccess,
     profileId,
     reloadFromServer,
     selectedPicture,
@@ -289,6 +293,9 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
   ]);
 
   const handleStartEdit = useCallback(() => {
+    if (forceEditMode) {
+      return;
+    }
     if (!canModifyProfile) {
       return;
     }
@@ -296,7 +303,7 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
     setFieldErrors({});
     setErrorMessage(null);
     setSuccessMessage(null);
-  }, [canModifyProfile]);
+  }, [canModifyProfile, forceEditMode]);
 
   const handleCancelEdit = useCallback(() => {
     setFormState(originalFormState);
@@ -320,6 +327,20 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
     }
 
     if (!isEditMode) {
+      if (forceEditMode && allowDefaultProfileEdit) {
+        onHeaderActionsChange({
+          primary: {
+            label: isSaving ? 'Guardando...' : 'Guardar cambios',
+            action: 'primary',
+            disabled: isLoading || isSaving || !hasChanges,
+            onClick: () => {
+              void handleSave();
+            }
+          }
+        });
+        return () => onHeaderActionsChange(null);
+      }
+
       onHeaderActionsChange({
         secondary: allowDefaultProfileEdit
           ? {
@@ -344,12 +365,14 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
     }
 
     onHeaderActionsChange({
-      secondary: {
-        label: 'Cancelar',
-        action: 'cancel',
-        disabled: isSaving,
-        onClick: handleCancelEdit
-      },
+      secondary: forceEditMode
+        ? undefined
+        : {
+            label: 'Cancelar',
+            action: 'cancel',
+            disabled: isSaving,
+            onClick: handleCancelEdit
+          },
       primary: {
         label: isSaving ? 'Guardando...' : 'Guardar cambios',
         action: 'primary',
@@ -363,6 +386,7 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
     return () => onHeaderActionsChange(null);
   }, [
     canModifyProfile,
+    forceEditMode,
     handleCancelEdit,
     handleStartEdit,
     handleSave,
@@ -516,7 +540,7 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
         <Stack direction="row" justifyContent="flex-end">
           {!canModifyProfile ? null : !isEditMode ? (
             <Stack direction="row" spacing={1}>
-              {allowDefaultProfileEdit ? (
+              {allowDefaultProfileEdit && !forceEditMode ? (
                 <Button variant="outlined" onClick={handleStartEdit} disabled={isLoading || isSaving}>
                   Realizar modificaciones
                 </Button>
@@ -534,9 +558,11 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
             </Stack>
           ) : (
             <Stack direction="row" spacing={1}>
-              <Button variant="outlined" onClick={handleCancelEdit} disabled={isSaving}>
-                Cancelar
-              </Button>
+              {!forceEditMode ? (
+                <Button variant="outlined" onClick={handleCancelEdit} disabled={isSaving}>
+                  Cancelar
+                </Button>
+              ) : null}
               <Button
                 variant="contained"
                 onClick={() => {

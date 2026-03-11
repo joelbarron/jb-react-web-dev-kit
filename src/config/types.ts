@@ -44,6 +44,8 @@ export type JBAuthAccountConfig = {
   allowAccountEdit: boolean;
   allowDefaultProfileEdit: boolean;
   allowProfilePictureChange: boolean;
+  ensureProfileCompletion: boolean;
+  profileCompletionPath?: string;
   requiredProfileFields: JBAuthRequiredProfileFields;
   subscriptionUrl?: string;
 };

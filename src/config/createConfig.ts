@@ -158,6 +158,7 @@ export const createJBWebConfigFromEnv = (
   const allowAccountEdit = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ALLOW_ACCOUNT_EDIT);
   const allowDefaultProfileEdit = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ALLOW_DEFAULT_PROFILE_EDIT);
   const allowProfilePictureChange = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ALLOW_PROFILE_PICTURE_CHANGE);
+  const ensureProfileCompletion = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ENSURE_PROFILE_COMPLETION);
   const apiHostOverrides: Partial<Record<JBAppStage, string>> = {};
 
   const setApiHost = (stage: JBAppStage, value?: string) => {
@@ -207,6 +208,12 @@ export const createJBWebConfigFromEnv = (
           : {}),
         ...(typeof allowProfilePictureChange === 'boolean'
           ? { allowProfilePictureChange }
+          : {}),
+        ...(typeof ensureProfileCompletion === 'boolean'
+          ? { ensureProfileCompletion }
+          : {}),
+        ...(runtimeEnv.VITE_AUTH_ACCOUNT_PROFILE_COMPLETION_PATH
+          ? { profileCompletionPath: runtimeEnv.VITE_AUTH_ACCOUNT_PROFILE_COMPLETION_PATH }
           : {}),
         ...(runtimeEnv.VITE_AUTH_ACCOUNT_SUBSCRIPTION_URL
           ? { subscriptionUrl: runtimeEnv.VITE_AUTH_ACCOUNT_SUBSCRIPTION_URL }

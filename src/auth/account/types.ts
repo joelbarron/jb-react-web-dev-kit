@@ -1,4 +1,6 @@
-import { JBAuthProfileRoleOption, JBAuthRequiredProfileFields, JBAuthSocialConfig } from '../../config';
+import { ReactNode } from 'react';
+
+import { JBAppConfig, JBAuthProfileRoleOption, JBAuthRequiredProfileFields, JBAuthSocialConfig } from '../../config';
 import { AuthClient } from '../client';
 
 export type AuthAccountSectionKey = 'profile' | 'account' | 'security' | 'profiles' | 'social' | 'subscription';
@@ -27,9 +29,11 @@ export type AuthAccountUnsavedChangesChange = (hasUnsavedChanges: boolean) => vo
 export type AuthAccountProfileViewProps = AuthAccountCommonViewProps & {
   onHeaderActionsChange?: AuthAccountHeaderActionsChange;
   onUnsavedChangesChange?: AuthAccountUnsavedChangesChange;
+  onSaveSuccess?: () => void;
   allowDefaultProfileEdit?: boolean;
   allowProfilePictureChange?: boolean;
   requiredProfileFields?: Partial<JBAuthRequiredProfileFields>;
+  forceEditMode?: boolean;
 };
 
 export type AuthAccountContactViewProps = AuthAccountCommonViewProps & {
@@ -59,4 +63,37 @@ export type AuthAccountSocialViewProps = AuthAccountCommonViewProps & {
 
 export type AuthAccountSubscriptionViewProps = {
   subscriptionUrl?: string;
+};
+
+export type AuthAccountModuleLayoutArgs = {
+  header: ReactNode;
+  content: ReactNode;
+  isMobile: boolean;
+};
+
+export type AuthAccountProfileCompletionPageViewProps = {
+  authClient: AuthClient;
+  jbWebConfig?: JBAppConfig;
+  title?: string;
+  subtitle?: string;
+  homePath?: string;
+  breadcrumb?: ReactNode;
+  headerIcon?: ReactNode;
+  showBackButton?: boolean;
+  renderLayout?: (args: AuthAccountModuleLayoutArgs) => ReactNode;
+};
+
+export type AuthAccountModuleViewProps = {
+  authClient: AuthClient;
+  jbWebConfig: JBAppConfig;
+  basePath?: string;
+  tabParamName?: string;
+  homePath?: string;
+  title?: string;
+  subtitle?: string;
+  breadcrumb?: ReactNode;
+  headerIcon?: ReactNode;
+  showBackButton?: boolean;
+  syncDefaultProfile?: boolean;
+  renderLayout?: (args: AuthAccountModuleLayoutArgs) => ReactNode;
 };

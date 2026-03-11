@@ -7,3 +7,7 @@ export * from './AuthAccountSecurityView';
 export * from './AuthAccountProfilesView';
 export * from './AuthAccountSocialView';
 export * from './AuthAccountSubscriptionView';
+export * from './AuthAccountModuleView';
+export * from './AuthAccountProfileCompletionPageView';
+export * from './AuthEnsureProfileCompletionGuard';
+export * from './profileCompletion';

@@ -1,5 +1,7 @@
 import React, { ReactNode, useMemo } from 'react';
 
+import { JBAppConfig, getAuthAccountConfig } from '../../config';
+import { AuthEnsureProfileCompletionGuard } from '../account/AuthEnsureProfileCompletionGuard';
 import { AuthClient } from '../client';
 import { createFuseJwtAuthProvider } from './fuseAdapter';
 
@@ -183,6 +185,7 @@ export function createWithUser<TProps extends object, TUserHookReturn>(
 
 type CreateFuseAuthenticationOptions<TUser extends FuseUser> = {
   authClient: AuthClient;
+  jbWebConfig?: JBAppConfig;
   FuseAuthProvider: React.ComponentType<{
     providers: Array<{
       name: string;
@@ -198,8 +201,10 @@ type CreateFuseAuthenticationOptions<TUser extends FuseUser> = {
 };
 
 export function createFuseAuthentication<TUser extends FuseUser>(options: CreateFuseAuthenticationOptions<TUser>) {
-  const { authClient, FuseAuthProvider, FuseAuthorization, providerName = 'jb-jwt' } = options;
+  const { authClient, jbWebConfig, FuseAuthProvider, FuseAuthorization, providerName = 'jb-jwt' } = options;
   const JwtProvider = createFuseJwtAuthProvider(authClient);
+  const accountConfig = jbWebConfig ? getAuthAccountConfig(jbWebConfig) : null;
+  const shouldMountProfileCompletionGuard = Boolean(accountConfig?.ensureProfileCompletion);
 
   const providers = [
     {
@@ -215,7 +220,20 @@ export function createFuseAuthentication<TUser extends FuseUser>(options: Create
       <FuseAuthProvider providers={providers}>
         {(authState) => {
           const userRole = authState?.user?.role as TUser['role'];
-          return <FuseAuthorization userRole={userRole}>{children}</FuseAuthorization>;
+          const authorizedContent = <FuseAuthorization userRole={userRole}>{children}</FuseAuthorization>;
+          if (!shouldMountProfileCompletionGuard) {
+            return authorizedContent;
+          }
+
+          return (
+            <AuthEnsureProfileCompletionGuard
+              authClient={authClient}
+              jbWebConfig={jbWebConfig}
+              enabled={Boolean(authState?.user)}
+            >
+              {authorizedContent}
+            </AuthEnsureProfileCompletionGuard>
+          );
         }}
       </FuseAuthProvider>
     );

@@ -5,11 +5,19 @@ import { AuthClient } from '../client';
 import { AuthAccountContactView } from './AuthAccountContactView';
 import { AuthAccountProfileView } from './AuthAccountProfileView';
 import { AuthAccountProfilesView } from './AuthAccountProfilesView';
+import { AuthAccountProfileCompletionPageView } from './AuthAccountProfileCompletionPageView';
 import { AuthAccountSecurityView } from './AuthAccountSecurityView';
 import { AuthAccountSocialView } from './AuthAccountSocialView';
 import { AuthAccountSubscriptionView } from './AuthAccountSubscriptionView';
 
-export type AccountRouteKey = 'profile' | 'account' | 'security' | 'profiles' | 'social' | 'subscription';
+export type AccountRouteKey =
+  | 'profile'
+  | 'account'
+  | 'security'
+  | 'profiles'
+  | 'social'
+  | 'subscription'
+  | 'completeProfile';
 
 export type AccountRouteItem<TMeta extends Record<string, unknown> = Record<string, unknown>> = {
   path: string;
@@ -31,7 +39,8 @@ const defaultPaths: Record<AccountRouteKey, string> = {
   security: 'security',
   profiles: 'profiles',
   social: 'social',
-  subscription: 'subscription'
+  subscription: 'subscription',
+  completeProfile: 'complete-profile'
 };
 
 const normalizePath = (basePath: string | undefined, routePath: string) => {
@@ -100,7 +109,13 @@ export function createAuthenticatedAccountRoutes<
         socialConfig={socialConfig}
       />
     ),
-    subscription: () => <AuthAccountSubscriptionView subscriptionUrl={accountConfig?.subscriptionUrl} />
+    subscription: () => <AuthAccountSubscriptionView subscriptionUrl={accountConfig?.subscriptionUrl} />,
+    completeProfile: () => (
+      <AuthAccountProfileCompletionPageView
+        authClient={authClient}
+        jbWebConfig={jbWebConfig}
+      />
+    )
   };
 
   const resolvedPages = {

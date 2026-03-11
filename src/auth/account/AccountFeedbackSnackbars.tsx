@@ -16,7 +16,7 @@ export function AccountFeedbackSnackbars(props: AccountFeedbackSnackbarsProps) {
       <Snackbar
         open={Boolean(successMessage)}
         autoHideDuration={3500}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         onClose={(_, reason) => {
           if (reason === 'clickaway') {
             return;
@@ -31,7 +31,7 @@ export function AccountFeedbackSnackbars(props: AccountFeedbackSnackbarsProps) {
       <Snackbar
         open={Boolean(errorMessage)}
         autoHideDuration={5000}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         onClose={(_, reason) => {
           if (reason === 'clickaway') {
             return;
