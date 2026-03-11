@@ -10,6 +10,36 @@ export type JBAuthProfileRoleOption = {
   allowSignup?: boolean;
 };
 
+export type JBAuthProfilePictureMimeType = 'image/jpeg' | 'image/png' | 'image/webp';
+export type JBAuthProfilePictureOutputType = 'data_url' | 'blob';
+
+export type JBAuthProfilePictureConfig = {
+  aspect: number;
+  targetWidth: number;
+  targetHeight: number;
+  quality: number;
+  mimeType: JBAuthProfilePictureMimeType;
+  outputType: JBAuthProfilePictureOutputType;
+  maxBytes: number;
+  acceptedMimeTypes: string[];
+  minZoom: number;
+  maxZoom: number;
+};
+
+export type JBAuthMediaConfig = {
+  profilePicture: JBAuthProfilePictureConfig;
+};
+
+export type JBAuthProfileFieldKey =
+  | 'firstName'
+  | 'lastName1'
+  | 'lastName2'
+  | 'birthday'
+  | 'gender'
+  | 'label';
+
+export type JBAuthRequiredProfileFields = Record<JBAuthProfileFieldKey, boolean>;
+
 export type JBSocialProviderName = 'google' | 'facebook' | 'apple';
 
 export type JBAuthSocialProviderConfig = {
@@ -26,6 +56,19 @@ export type JBAuthSocialProviderConfig = {
 };
 
 export type JBAuthSocialConfig = Record<JBSocialProviderName, JBAuthSocialProviderConfig>;
+
+export type JBAuthAccountConfig = {
+  allowProfileManagement: boolean;
+  enableContactVerification: boolean;
+  allowDeleteAccount: boolean;
+  allowAccountEdit: boolean;
+  allowDefaultProfileEdit: boolean;
+  allowProfilePictureChange: boolean;
+  ensureProfileCompletion: boolean;
+  profileCompletionPath?: string;
+  requiredProfileFields: JBAuthRequiredProfileFields;
+  subscriptionUrl?: string;
+};
 
 export type JBAppConfig = {
   debug: boolean;
@@ -45,9 +88,12 @@ export type JBAppConfig = {
   auth: {
     apiBasePath: string;
     showDebugSocial: boolean;
+    enableOtpAuth: boolean;
     profileRoles: JBAuthProfileRoleOption[];
     defaultProfileRole?: string;
     social: JBAuthSocialConfig;
+    account: JBAuthAccountConfig;
+    media: JBAuthMediaConfig;
   };
   integrations: Record<string, unknown>;
 };

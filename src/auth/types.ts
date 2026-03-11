@@ -30,6 +30,12 @@ export type JbDrfAuthEndpoints = {
   switchProfile: string;
   profiles: string;
   accountUpdate: string;
+  accountEmailAvailability: string;
+  accountPhoneAvailability: string;
+  accountUsernameAvailability: string;
+  accountContactVerificationRequest: string;
+  accountContactVerificationVerify: string;
+  accountSocialAccounts: string;
   accountDelete: string;
   passwordResetRequest: string;
   passwordResetConfirm: string;
@@ -144,6 +150,19 @@ export type RequestOtpPayload = {
   phone?: string;
 };
 
+export type ContactVerificationRequestPayload = {
+  channel: OtpChannel;
+  email?: string;
+  phone?: string;
+};
+
+export type ContactVerificationVerifyPayload = {
+  channel: OtpChannel;
+  code: string;
+  email?: string;
+  phone?: string;
+};
+
 export type VerifyOtpPayload = {
   channel: OtpChannel;
   code: string;
@@ -207,11 +226,49 @@ export type AccountUpdatePayload = {
   email?: string;
   username?: string;
   phone?: string;
+  emailVerificationProofToken?: string;
+  email_verification_proof_token?: string;
+  phoneVerificationProofToken?: string;
+  phone_verification_proof_token?: string;
   termsAndConditions?: boolean;
   language?: string;
   timezone?: string;
   [key: string]: unknown;
 };
+
+export type EmailAvailabilityPayload = {
+  email: string;
+};
+
+export type PhoneAvailabilityPayload = {
+  phone: string;
+};
+
+export type UsernameAvailabilityPayload = {
+  username: string;
+};
+
+export type AvailabilityResponse = {
+  field: 'email' | 'phone' | 'username' | string;
+  value: string;
+  available: boolean;
+  detail?: string;
+};
+
+export type SocialAccountItem = {
+  provider: SocialProvider | string;
+  email?: string | null;
+  email_verified?: boolean;
+  emailVerified?: boolean;
+  linked_at?: string | null;
+  linkedAt?: string | null;
+  last_login_at?: string | null;
+  lastLoginAt?: string | null;
+  picture_url?: string | null;
+  pictureUrl?: string | null;
+};
+
+export type AccountSocialAccountsResponse = SocialAccountItem[] | { results?: SocialAccountItem[] };
 
 export type DeleteAccountPayload = {
   confirmation: boolean;

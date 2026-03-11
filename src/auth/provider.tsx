@@ -35,6 +35,7 @@ export type JBAuthContextValue = {
   switchProfile: (payload: SwitchProfilePayload) => Promise<unknown>;
   signOut: () => void;
   refreshToken: () => Promise<string | null>;
+  refreshMe: () => Promise<unknown>;
 };
 
 type JBAuthProviderProps = {
@@ -124,6 +125,12 @@ export function JBAuthProvider(props: JBAuthProviderProps) {
     return response.accessToken || null;
   }, [authClient]);
 
+  const refreshMe = useCallback(async () => {
+    const response = await authClient.getMe();
+    setAuthenticatedSession(response);
+    return response;
+  }, [authClient, setAuthenticatedSession]);
+
   const requestOtp = useCallback(
     async (payload: RequestOtpPayload) => authClient.requestOtp(payload),
     [authClient]
@@ -201,7 +208,8 @@ export function JBAuthProvider(props: JBAuthProviderProps) {
       getProfiles,
       switchProfile,
       signOut,
-      refreshToken
+      refreshToken,
+      refreshMe
     }),
     [
       authStatus,
@@ -218,7 +226,8 @@ export function JBAuthProvider(props: JBAuthProviderProps) {
       getProfiles,
       switchProfile,
       signOut,
-      refreshToken
+      refreshToken,
+      refreshMe
     ]
   );
 

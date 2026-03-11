@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
-import { JBAuthProfileRoleOption, JBAuthSocialConfig } from "../../config";
+import { JBAuthProfileRoleOption, JBAuthRequiredProfileFields, JBAuthSocialConfig } from "../../config";
 import {
   AuthAccountConfirmationForm,
   AuthForgotPasswordForm,
@@ -47,7 +47,6 @@ const DEV_SIGN_UP_DEFAULT_VALUES = IS_DEV
       lastName2: "Hernandez",
       email: "joel.test+1@example.com",
       birthday: "1995-12-16",
-      gender: "MALE" as const,
       password: "Test123_",
       passwordConfirm: "Test123_",
       acceptTermsConditions: true,
@@ -232,17 +231,25 @@ type FuseSignUpControllerProps = {
   }) => void;
   requiresRoleSelection?: boolean;
   disabled?: boolean;
+  requiredProfileFields?: Partial<JBAuthRequiredProfileFields>;
   requestRoleSelection?: () => Promise<string | undefined>;
 };
 
 function FuseSignUpController(props: FuseSignUpControllerProps) {
-  const { onSuccess, requestRoleSelection, requiresRoleSelection = false, disabled = false } = props;
+  const {
+    onSuccess,
+    requestRoleSelection,
+    requiresRoleSelection = false,
+    disabled = false,
+    requiredProfileFields
+  } = props;
   const { signUp } = useFuseJwtAuth();
 
   return (
     <AuthSignUpForm
       defaultValues={DEV_SIGN_UP_DEFAULT_VALUES}
       disabled={disabled}
+      requiredProfileFields={requiredProfileFields}
       onSubmit={async (values) => {
         const selectedRole = requestRoleSelection
           ? await requestRoleSelection()
@@ -299,6 +306,7 @@ function FuseOtpSignUpForm(props: FuseOtpSignUpFormProps) {
 
 type AlternativesProps = {
   onSmsClick?: () => void;
+  showSmsOption?: boolean;
   socialProviders?: EnabledSocialProvider[];
   onSocialClick?: (provider: SocialProvider) => void;
   socialLoadingProvider?: SocialProvider | null;
@@ -306,7 +314,12 @@ type AlternativesProps = {
 };
 
 function FuseAuthAlternativesSection(props: AlternativesProps) {
-  const { onSmsClick, socialProviders = [], onSocialClick, socialLoadingProvider, socialError } = props;
+  const { onSmsClick, showSmsOption = true, socialProviders = [], onSocialClick, socialLoadingProvider, socialError } = props;
+  const hasAlternatives = socialProviders.length > 0 || showSmsOption;
+
+  if (!hasAlternatives) {
+    return null;
+  }
 
   return (
     <>
@@ -339,14 +352,16 @@ function FuseAuthAlternativesSection(props: AlternativesProps) {
           />
         ))}
 
-        <AuthSocialProviderButton
-          aria-label="SMS"
-          provider="sms"
-          disabled={Boolean(socialLoadingProvider)}
-          onClick={onSmsClick}
->
-          SMS
-        </AuthSocialProviderButton>
+        {showSmsOption ? (
+          <AuthSocialProviderButton
+            aria-label="SMS"
+            provider="sms"
+            disabled={Boolean(socialLoadingProvider)}
+            onClick={onSmsClick}
+          >
+            SMS
+          </AuthSocialProviderButton>
+        ) : null}
       </Box>
 
       {socialError ? (
@@ -570,8 +585,10 @@ type CreateFuseAuthViewsOptions = {
   accountConfirmationPath?: string;
   signUpRoleOptions?: JBAuthProfileRoleOption[];
   defaultSignUpRole?: string;
+  requiredProfileFields?: Partial<JBAuthRequiredProfileFields>;
   socialConfig?: JBAuthSocialConfig;
   showDebugSocial?: boolean;
+  enableOtpAuth?: boolean;
   onSignUpSuccess?: (values: {
     email: string;
     detail?: string;
@@ -585,8 +602,10 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
     accountConfirmationPath = "/verify-email",
     signUpRoleOptions,
     defaultSignUpRole,
+    requiredProfileFields,
     socialConfig,
     showDebugSocial = false,
+    enableOtpAuth = true,
     onSignUpSuccess,
   } = options;
 
@@ -615,6 +634,12 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
     );
     const magicLinkToken = useMemo(() => (searchParams.get("mlt") || "").trim(), [searchParams]);
     const isAuthFlowBusy = socialLoadingProvider !== null;
+
+    useEffect(() => {
+      if (!enableOtpAuth && mode === "otp") {
+        setMode("password");
+      }
+    }, [enableOtpAuth, mode]);
 
     useEffect(() => {
       if (!magicLinkToken) {
@@ -762,7 +787,8 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
                 disabled={isAuthFlowBusy}
               />
               <FuseAuthAlternativesSection
-                onSmsClick={() => setMode("otp")}
+                onSmsClick={enableOtpAuth ? () => setMode("otp") : undefined}
+                showSmsOption={enableOtpAuth}
                 socialProviders={enabledSocialProviders}
                 onSocialClick={onSocialClick}
                 socialLoadingProvider={socialLoadingProvider}
@@ -797,6 +823,12 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
       [socialConfig, showDebugSocial]
     );
     const isAuthFlowBusy = socialLoadingProvider !== null;
+
+    useEffect(() => {
+      if (!enableOtpAuth && mode === "otp") {
+        setMode("password");
+      }
+    }, [enableOtpAuth, mode]);
 
     const onSocialClick = useCallback(
       async (provider: SocialProvider) => {
@@ -875,6 +907,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
                 disabled={isAuthFlowBusy}
                 requiresRoleSelection={hasRoleOptions}
                 requestRoleSelection={requestRoleSelection}
+                requiredProfileFields={requiredProfileFields}
                 onSuccess={(payload) => {
                   const { email } = payload;
                   onSignUpSuccess?.(payload);
@@ -888,7 +921,8 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
                 disabled={isAuthFlowBusy}
               />
               <FuseAuthAlternativesSection
-                onSmsClick={() => setMode("otp")}
+                onSmsClick={enableOtpAuth ? () => setMode("otp") : undefined}
+                showSmsOption={enableOtpAuth}
                 socialProviders={enabledSocialProviders}
                 onSocialClick={onSocialClick}
                 socialLoadingProvider={socialLoadingProvider}

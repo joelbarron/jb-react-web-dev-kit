@@ -1,8 +1,10 @@
 import { ComponentType, ReactElement, ReactNode } from 'react';
 import {
   JBAppConfig,
+  getAuthAccountConfig,
   JBAuthProfileRoleOption,
   getAuthDefaultProfileRole,
+  getAuthEnableOtpAuth,
   getAuthShowDebugSocial,
   getAuthSignupProfileRoles,
   getAuthSocialConfig
@@ -113,8 +115,10 @@ export function createAuthRoutes<TMeta extends Record<string, unknown> = Record<
   } = options;
   const resolvedSignUpRoleOptions = signUpRoleOptions ?? (jbWebConfig ? getAuthSignupProfileRoles(jbWebConfig) : undefined);
   const resolvedDefaultSignUpRole = defaultSignUpRole ?? (jbWebConfig ? getAuthDefaultProfileRole(jbWebConfig) : undefined);
+  const resolvedAccountConfig = jbWebConfig ? getAuthAccountConfig(jbWebConfig) : undefined;
   const resolvedSocialConfig = jbWebConfig ? getAuthSocialConfig(jbWebConfig) : undefined;
   const resolvedShowDebugSocial = jbWebConfig ? getAuthShowDebugSocial(jbWebConfig) : false;
+  const resolvedEnableOtpAuth = jbWebConfig ? getAuthEnableOtpAuth(jbWebConfig) : true;
   const resolvedPaths = { ...defaultPaths, ...(paths ?? {}) };
   const accountConfirmationRoutePath = normalizePath(basePath, resolvedPaths.accountConfirmation);
   const accountConfirmationPath = `/${accountConfirmationRoutePath}`;
@@ -126,8 +130,10 @@ export function createAuthRoutes<TMeta extends Record<string, unknown> = Record<
             accountConfirmationPath,
             signUpRoleOptions: resolvedSignUpRoleOptions,
             defaultSignUpRole: resolvedDefaultSignUpRole,
+            requiredProfileFields: resolvedAccountConfig?.requiredProfileFields,
             socialConfig: resolvedSocialConfig,
             showDebugSocial: resolvedShowDebugSocial,
+            enableOtpAuth: resolvedEnableOtpAuth,
             onSignUpSuccess
           });
 

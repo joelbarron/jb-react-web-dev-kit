@@ -23,8 +23,42 @@ export const defaultJBAppConfig: JBAppConfig = {
   auth: {
     apiBasePath: '/authentication',
     showDebugSocial: false,
+    enableOtpAuth: true,
     profileRoles: [],
     defaultProfileRole: undefined,
+    media: {
+      profilePicture: {
+        aspect: 1,
+        targetWidth: 1024,
+        targetHeight: 1024,
+        quality: 0.85,
+        mimeType: 'image/jpeg',
+        outputType: 'data_url',
+        maxBytes: 5 * 1024 * 1024,
+        acceptedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+        minZoom: 1,
+        maxZoom: 3
+      }
+    },
+    account: {
+      allowProfileManagement: false,
+      enableContactVerification: true,
+      allowDeleteAccount: false,
+      allowAccountEdit: true,
+      allowDefaultProfileEdit: true,
+      allowProfilePictureChange: true,
+      ensureProfileCompletion: false,
+      profileCompletionPath: '/account/complete-profile',
+      requiredProfileFields: {
+        firstName: true,
+        lastName1: true,
+        lastName2: false,
+        birthday: true,
+        gender: true,
+        label: false
+      },
+      subscriptionUrl: undefined
+    },
     social: {
       google: {
         enabled: false
