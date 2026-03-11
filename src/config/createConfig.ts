@@ -158,7 +158,6 @@ export const createJBWebConfigFromEnv = (
   const allowAccountEdit = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ALLOW_ACCOUNT_EDIT);
   const allowDefaultProfileEdit = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ALLOW_DEFAULT_PROFILE_EDIT);
   const allowProfilePictureChange = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_ALLOW_PROFILE_PICTURE_CHANGE);
-  const requireProfileBirthday = parseBooleanEnv(runtimeEnv.VITE_AUTH_ACCOUNT_REQUIRE_PROFILE_BIRTHDAY);
   const apiHostOverrides: Partial<Record<JBAppStage, string>> = {};
 
   const setApiHost = (stage: JBAppStage, value?: string) => {
@@ -208,9 +207,6 @@ export const createJBWebConfigFromEnv = (
           : {}),
         ...(typeof allowProfilePictureChange === 'boolean'
           ? { allowProfilePictureChange }
-          : {}),
-        ...(typeof requireProfileBirthday === 'boolean'
-          ? { requireProfileBirthday }
           : {}),
         ...(runtimeEnv.VITE_AUTH_ACCOUNT_SUBSCRIPTION_URL
           ? { subscriptionUrl: runtimeEnv.VITE_AUTH_ACCOUNT_SUBSCRIPTION_URL }
@@ -289,18 +285,12 @@ export const getAuthRequiredProfileFields = (
   accountConfig?: Partial<JBAuthAccountConfig>
 ): JBAuthRequiredProfileFields => {
   const defaultRequiredProfileFields = defaultJBAppConfig.auth.account.requiredProfileFields;
-  const customRequiredProfileFields = accountConfig?.requiredProfileFields ?? {};
-  const resolvedBirthdayRequired =
-    typeof customRequiredProfileFields.birthday === 'boolean'
-      ? customRequiredProfileFields.birthday
-      : (typeof accountConfig?.requireProfileBirthday === 'boolean'
-        ? accountConfig.requireProfileBirthday
-        : defaultRequiredProfileFields.birthday);
+  const customRequiredProfileFields = (accountConfig?.requiredProfileFields ??
+    {}) as Partial<JBAuthRequiredProfileFields>;
 
   return {
     ...defaultRequiredProfileFields,
-    ...customRequiredProfileFields,
-    birthday: resolvedBirthdayRequired
+    ...customRequiredProfileFields
   };
 };
 
@@ -310,7 +300,6 @@ export const getAuthAccountConfig = (config: JBAppConfig): JBAuthAccountConfig =
   return {
     ...defaultJBAppConfig.auth.account,
     ...accountConfig,
-    requiredProfileFields,
-    requireProfileBirthday: requiredProfileFields.birthday
+    requiredProfileFields
   };
 };

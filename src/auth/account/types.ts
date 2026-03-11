@@ -29,7 +29,6 @@ export type AuthAccountProfileViewProps = AuthAccountCommonViewProps & {
   onUnsavedChangesChange?: AuthAccountUnsavedChangesChange;
   allowDefaultProfileEdit?: boolean;
   allowProfilePictureChange?: boolean;
-  requireBirthday?: boolean;
   requiredProfileFields?: Partial<JBAuthRequiredProfileFields>;
 };
 

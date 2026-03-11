@@ -33,11 +33,10 @@ export const defaultJBAppConfig: JBAppConfig = {
       allowAccountEdit: true,
       allowDefaultProfileEdit: true,
       allowProfilePictureChange: true,
-      requireProfileBirthday: true,
       requiredProfileFields: {
-        first_name: true,
-        last_name_1: true,
-        last_name_2: false,
+        firstName: true,
+        lastName1: true,
+        lastName2: false,
         birthday: true,
         gender: true,
         label: false

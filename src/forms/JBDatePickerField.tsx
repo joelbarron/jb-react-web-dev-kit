@@ -66,27 +66,21 @@ export function JBDatePickerField<
     name,
     rules,
     textFieldProps,
+    sx: datePickerSx,
     storeAsDateString = false,
     ...datePickerProps
   } = props;
   const { size = 'medium', ...resolvedTextFieldProps } = textFieldProps ?? {};
-  const mergedTextFieldSx = Array.isArray(resolvedTextFieldProps.sx)
-    ? [
-        {
-          '& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root': {
-            backgroundColor: 'common.background'
-          }
-        },
-        ...resolvedTextFieldProps.sx
-      ]
-    : [
-        {
-          '& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root': {
-            backgroundColor: 'common.background'
-          }
-        },
-        resolvedTextFieldProps.sx
-      ];
+  const asSxArray = (value: unknown) => (Array.isArray(value) ? value : [value]);
+  const mergedTextFieldSx = [
+    {
+      '& .MuiOutlinedInput-root, & .MuiPickersOutlinedInput-root': {
+        backgroundColor: 'common.background'
+      }
+    },
+    ...asSxArray(datePickerSx),
+    ...asSxArray(resolvedTextFieldProps.sx)
+  ];
 
   return (
     <Controller
@@ -97,6 +91,7 @@ export function JBDatePickerField<
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DatePicker
             {...datePickerProps}
+            sx={datePickerSx}
             value={storeAsDateString ? asDateValue(field.value) : field.value ?? null}
             onChange={(value) => field.onChange(storeAsDateString ? formatDateValue(value) : value)}
             slotProps={{

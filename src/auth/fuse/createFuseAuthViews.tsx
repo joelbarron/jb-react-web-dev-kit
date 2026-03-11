@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
-import { JBAuthProfileRoleOption, JBAuthSocialConfig } from "../../config";
+import { JBAuthProfileRoleOption, JBAuthRequiredProfileFields, JBAuthSocialConfig } from "../../config";
 import {
   AuthAccountConfirmationForm,
   AuthForgotPasswordForm,
@@ -47,7 +47,6 @@ const DEV_SIGN_UP_DEFAULT_VALUES = IS_DEV
       lastName2: "Hernandez",
       email: "joel.test+1@example.com",
       birthday: "1995-12-16",
-      gender: "MALE" as const,
       password: "Test123_",
       passwordConfirm: "Test123_",
       acceptTermsConditions: true,
@@ -232,17 +231,25 @@ type FuseSignUpControllerProps = {
   }) => void;
   requiresRoleSelection?: boolean;
   disabled?: boolean;
+  requiredProfileFields?: Partial<JBAuthRequiredProfileFields>;
   requestRoleSelection?: () => Promise<string | undefined>;
 };
 
 function FuseSignUpController(props: FuseSignUpControllerProps) {
-  const { onSuccess, requestRoleSelection, requiresRoleSelection = false, disabled = false } = props;
+  const {
+    onSuccess,
+    requestRoleSelection,
+    requiresRoleSelection = false,
+    disabled = false,
+    requiredProfileFields
+  } = props;
   const { signUp } = useFuseJwtAuth();
 
   return (
     <AuthSignUpForm
       defaultValues={DEV_SIGN_UP_DEFAULT_VALUES}
       disabled={disabled}
+      requiredProfileFields={requiredProfileFields}
       onSubmit={async (values) => {
         const selectedRole = requestRoleSelection
           ? await requestRoleSelection()
@@ -578,6 +585,7 @@ type CreateFuseAuthViewsOptions = {
   accountConfirmationPath?: string;
   signUpRoleOptions?: JBAuthProfileRoleOption[];
   defaultSignUpRole?: string;
+  requiredProfileFields?: Partial<JBAuthRequiredProfileFields>;
   socialConfig?: JBAuthSocialConfig;
   showDebugSocial?: boolean;
   enableOtpAuth?: boolean;
@@ -594,6 +602,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
     accountConfirmationPath = "/verify-email",
     signUpRoleOptions,
     defaultSignUpRole,
+    requiredProfileFields,
     socialConfig,
     showDebugSocial = false,
     enableOtpAuth = true,
@@ -898,6 +907,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
                 disabled={isAuthFlowBusy}
                 requiresRoleSelection={hasRoleOptions}
                 requestRoleSelection={requestRoleSelection}
+                requiredProfileFields={requiredProfileFields}
                 onSuccess={(payload) => {
                   const { email } = payload;
                   onSignUpSuccess?.(payload);

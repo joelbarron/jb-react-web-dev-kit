@@ -70,7 +70,6 @@ export function createAuthenticatedAccountRoutes<
         authClient={authClient}
         allowDefaultProfileEdit={accountConfig?.allowDefaultProfileEdit}
         allowProfilePictureChange={accountConfig?.allowProfilePictureChange}
-        requireBirthday={accountConfig?.requireProfileBirthday}
         requiredProfileFields={accountConfig?.requiredProfileFields}
       />
     ),

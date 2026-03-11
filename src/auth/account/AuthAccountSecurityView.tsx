@@ -7,6 +7,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
@@ -317,53 +318,55 @@ export function AuthAccountSecurityView(props: AuthAccountSecurityViewProps) {
       </Stack>
 
       {allowDeleteAccount ? (
-        <Accordion
-          disableGutters
-          expanded={isDeleteSectionExpanded}
-          onChange={(_event, expanded) => setIsDeleteSectionExpanded(expanded)}
-          sx={{
-            mt: 16,
-            border: (theme) => `1px solid ${theme.palette.divider}`,
-            borderRadius: 1,
-            '&:before': {
-              display: 'none'
-            }
-          }}>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="delete-account-content"
-            id="delete-account-header">
-            <Typography variant="h6" color="error">
-              Eliminar cuenta
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Stack spacing={2}>
-              <Typography variant="body2" color="text.secondary">
-                Escribe <strong>ELIMINAR</strong> para confirmar.
+        <Stack spacing={3} sx={{ pt: 3 }}>
+          <Divider />
+          <Accordion
+            disableGutters
+            expanded={isDeleteSectionExpanded}
+            onChange={(_event, expanded) => setIsDeleteSectionExpanded(expanded)}
+            sx={{
+              border: (theme) => `1px solid ${theme.palette.divider}`,
+              borderRadius: 1,
+              '&:before': {
+                display: 'none'
+              }
+            }}>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="delete-account-content"
+              id="delete-account-header">
+              <Typography variant="h6" color="error">
+                Eliminar cuenta
               </Typography>
-              <Box>
-                <TextField
-                  fullWidth
-                  label="Confirmación"
-                  value={deleteConfirmValue}
-                  onChange={(event) => setDeleteConfirmValue(event.target.value)}
-                  error={Boolean(deleteErrorMessage)}
-                  helperText={deleteErrorMessage || 'Escribe ELIMINAR para confirmar la acción.'}
-                />
-              </Box>
-              <Stack direction="row" justifyContent="flex-end">
-                <Button
-                  color="error"
-                  variant="contained"
-                  onClick={() => void handleDeleteAccount()}
-                  disabled={isDeletingAccount}>
-                  {isDeletingAccount ? 'Eliminando...' : 'Eliminar cuenta'}
-                </Button>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Stack spacing={2}>
+                <Typography variant="body2" color="text.secondary">
+                  Escribe <strong>ELIMINAR</strong> para confirmar.
+                </Typography>
+                <Box>
+                  <TextField
+                    fullWidth
+                    label="Confirmación"
+                    value={deleteConfirmValue}
+                    onChange={(event) => setDeleteConfirmValue(event.target.value)}
+                    error={Boolean(deleteErrorMessage)}
+                    helperText={deleteErrorMessage || 'Escribe ELIMINAR para confirmar la acción.'}
+                  />
+                </Box>
+                <Stack direction="row" justifyContent="flex-end">
+                  <Button
+                    color="error"
+                    variant="contained"
+                    onClick={() => void handleDeleteAccount()}
+                    disabled={isDeletingAccount}>
+                    {isDeletingAccount ? 'Eliminando...' : 'Eliminar cuenta'}
+                  </Button>
+                </Stack>
               </Stack>
-            </Stack>
-          </AccordionDetails>
-        </Accordion>
+            </AccordionDetails>
+          </Accordion>
+        </Stack>
       ) : null}
       <AccountFeedbackSnackbars
         successMessage={successMessage}

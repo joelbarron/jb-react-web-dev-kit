@@ -11,9 +11,9 @@ export type JBAuthProfileRoleOption = {
 };
 
 export type JBAuthProfileFieldKey =
-  | 'first_name'
-  | 'last_name_1'
-  | 'last_name_2'
+  | 'firstName'
+  | 'lastName1'
+  | 'lastName2'
   | 'birthday'
   | 'gender'
   | 'label';
@@ -44,7 +44,6 @@ export type JBAuthAccountConfig = {
   allowAccountEdit: boolean;
   allowDefaultProfileEdit: boolean;
   allowProfilePictureChange: boolean;
-  requireProfileBirthday: boolean;
   requiredProfileFields: JBAuthRequiredProfileFields;
   subscriptionUrl?: string;
 };

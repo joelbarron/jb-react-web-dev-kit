@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 
 import { JBConfirmDialog } from '../../core';
+import { JBAuthRequiredProfileFields } from '../../config';
 import { GENDERS, GENDER_SELECT_OPTIONS } from '../constants';
 import { parseAuthError } from '../forms/errorParser';
 import { AccountFeedbackSnackbars } from './AccountFeedbackSnackbars';
@@ -44,20 +45,88 @@ const EMPTY_PROFILE_FORM: ProfileFormState = {
   is_default: false
 };
 
-const profileFormSchema = z.object({
-  first_name: z.string().trim().min(1, 'Debes ingresar el nombre.'),
-  last_name_1: z.string().trim().min(1, 'Debes ingresar el apellido paterno.'),
+const DEFAULT_REQUIRED_PROFILE_FIELDS: JBAuthRequiredProfileFields = {
+  firstName: true,
+  lastName1: true,
+  lastName2: false,
+  birthday: true,
+  gender: true,
+  label: false
+};
+
+const createProfileFormSchema = (requiredProfileFields: JBAuthRequiredProfileFields) => z.object({
+  first_name: z.string(),
+  last_name_1: z.string(),
   last_name_2: z.string().optional(),
-  birthday: z
-    .string()
-    .optional()
-    .refine((value) => !value || /^\d{4}-\d{2}-\d{2}$/.test(value), {
-      message: 'La fecha de nacimiento no es válida.'
-    }),
-  gender: z.union([z.literal(''), z.enum(GENDERS)]),
+  birthday: z.string().optional(),
+  gender: z.string().optional(),
   label: z.string().optional(),
   role: z.string().trim().min(1, 'Selecciona un rol para el perfil.'),
   is_default: z.boolean()
+}).superRefine((data, ctx) => {
+  if (requiredProfileFields.firstName && !String(data.first_name || '').trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Debes ingresar el nombre.',
+      path: ['first_name']
+    });
+  }
+
+  if (requiredProfileFields.lastName1 && !String(data.last_name_1 || '').trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Debes ingresar el primer apellido.',
+      path: ['last_name_1']
+    });
+  }
+
+  if (requiredProfileFields.lastName2 && !String(data.last_name_2 || '').trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Debes ingresar el segundo apellido.',
+      path: ['last_name_2']
+    });
+  }
+
+  const birthday = String(data.birthday || '').trim();
+  if (birthday && !/^\d{4}-\d{2}-\d{2}$/.test(birthday)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'La fecha de nacimiento no es válida.',
+      path: ['birthday']
+    });
+  }
+  if (requiredProfileFields.birthday && !birthday) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Debes ingresar la fecha de nacimiento.',
+      path: ['birthday']
+    });
+  }
+
+  const gender = String(data.gender || '').trim().toUpperCase();
+  if (gender && !GENDERS.includes(gender as (typeof GENDERS)[number])) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Selecciona un género válido.',
+      path: ['gender']
+    });
+  }
+  if (requiredProfileFields.gender && !gender) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Debes seleccionar el género.',
+      path: ['gender']
+    });
+  }
+
+  if (requiredProfileFields.label && !String(data.label || '').trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Debes ingresar la etiqueta del perfil.',
+      path: ['label']
+    });
+  }
 });
 
 const FALLBACK_ROLE_LABELS: Record<string, string> = {
@@ -120,6 +189,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
     authClient,
     allowProfileManagement = false,
     profileRoles = [],
+    requiredProfileFields,
     onHeaderActionsChange,
     onUnsavedChangesChange
   } = props;
@@ -136,6 +206,17 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<ProfileFormErrors>({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const resolvedRequiredFields = useMemo(
+    () => ({
+      ...DEFAULT_REQUIRED_PROFILE_FIELDS,
+      ...(requiredProfileFields ?? {})
+    }),
+    [requiredProfileFields]
+  );
+  const profileFormSchema = useMemo(
+    () => createProfileFormSchema(resolvedRequiredFields),
+    [resolvedRequiredFields]
+  );
 
   const loadProfiles = useCallback(async () => {
     setIsLoading(true);
@@ -395,7 +476,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
     } finally {
       setIsSaving(false);
     }
-  }, [authClient, formState, loadProfiles, selectedPictureFile, selectedProfileId]);
+  }, [authClient, formState, loadProfiles, profileFormSchema, selectedPictureFile, selectedProfileId]);
 
   const onDelete = useCallback(async () => {
     if (!selectedProfileId) {
@@ -653,21 +734,24 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
                   gap: 2
                 }}>
                 <TextField
-                  label="Nombre"
+                  label="Nombre(s)"
+                  required={resolvedRequiredFields.firstName}
                   value={formState.first_name}
                   onChange={(event) => onFieldChange('first_name', event.target.value)}
                   error={Boolean(fieldErrors.first_name)}
                   helperText={fieldErrors.first_name}
                 />
                 <TextField
-                  label="Apellido paterno"
+                  label="Primer apellido"
+                  required={resolvedRequiredFields.lastName1}
                   value={formState.last_name_1}
                   onChange={(event) => onFieldChange('last_name_1', event.target.value)}
                   error={Boolean(fieldErrors.last_name_1)}
                   helperText={fieldErrors.last_name_1}
                 />
                 <TextField
-                  label="Apellido materno"
+                  label="Segundo apellido"
+                  required={resolvedRequiredFields.lastName2}
                   value={formState.last_name_2}
                   onChange={(event) => onFieldChange('last_name_2', event.target.value)}
                   error={Boolean(fieldErrors.last_name_2)}
@@ -676,6 +760,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
                 <TextField
                   label="Fecha de nacimiento"
                   type="date"
+                  required={resolvedRequiredFields.birthday}
                   value={formState.birthday}
                   onChange={(event) => onFieldChange('birthday', event.target.value)}
                   InputLabelProps={{ shrink: true }}
@@ -685,6 +770,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
                 <TextField
                   label="Género"
                   select
+                  required={resolvedRequiredFields.gender}
                   value={formState.gender}
                   onChange={(event) => onFieldChange('gender', event.target.value)}
                   error={Boolean(fieldErrors.gender)}
@@ -716,6 +802,7 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
                 </TextField>
                 <TextField
                   label="Etiqueta"
+                  required={resolvedRequiredFields.label}
                   value={formState.label}
                   onChange={(event) => onFieldChange('label', event.target.value)}
                   error={Boolean(fieldErrors.label)}

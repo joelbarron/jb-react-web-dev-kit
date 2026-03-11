@@ -7,25 +7,35 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import _ from 'lodash';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
+import { JBAuthRequiredProfileFields } from '../../../config';
 import { JBCheckboxField, JBDatePickerField, JBSelectField, JBTextField, SelectOption } from '../../../forms';
-import { DEFAULT_GENDER, GENDERS, GENDER_SELECT_OPTIONS } from '../../constants';
+import { GENDERS, GENDER_SELECT_OPTIONS } from '../../constants';
 import { RegisterPayload } from '../../types';
 import { AuthPrimaryButton } from '../../ui';
 import { getDjangoLikePasswordError, isPasswordTooSimilar } from '../password/passwordValidation';
 import { parseAuthError } from '../errorParser';
 
-const signUpSchema = z
+const DEFAULT_REQUIRED_PROFILE_FIELDS: JBAuthRequiredProfileFields = {
+  firstName: true,
+  lastName1: true,
+  lastName2: false,
+  birthday: true,
+  gender: true,
+  label: false
+};
+
+const createSignUpSchema = (requiredProfileFields: JBAuthRequiredProfileFields) => z
   .object({
-    firstName: z.string().nonempty('Debes ingresar el nombre'),
-    lastName1: z.string().nonempty('Debes ingresar el primer apellido'),
+    firstName: z.string(),
+    lastName1: z.string(),
     lastName2: z.string().optional(),
     email: z.string().email('Debes ingresar un correo válido').nonempty('Debes ingresar un correo'),
     birthday: z.string().optional(),
-    gender: z.enum(GENDERS).optional(),
+    gender: z.union([z.enum(GENDERS), z.literal('')]).optional(),
     role: z.string().optional(),
     password: z.string().nonempty('Debes ingresar la contraseña.'),
     passwordConfirm: z.string().nonempty('La confirmación de contraseña es obligatoria'),
@@ -36,6 +46,55 @@ const signUpSchema = z
     path: ['passwordConfirm']
   })
   .superRefine((data, ctx) => {
+    if (requiredProfileFields.firstName && !data.firstName.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes ingresar el nombre',
+        path: ['firstName']
+      });
+    }
+
+    if (requiredProfileFields.lastName1 && !data.lastName1.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes ingresar el primer apellido',
+        path: ['lastName1']
+      });
+    }
+
+    if (requiredProfileFields.lastName2 && !String(data.lastName2 || '').trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes ingresar el segundo apellido',
+        path: ['lastName2']
+      });
+    }
+
+    if (requiredProfileFields.birthday && !String(data.birthday || '').trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes ingresar la fecha de nacimiento',
+        path: ['birthday']
+      });
+    }
+
+    const gender = String(data.gender || '').trim().toUpperCase();
+    if (gender && !GENDERS.includes(gender as (typeof GENDERS)[number])) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes seleccionar un género válido',
+        path: ['gender']
+      });
+    }
+
+    if (requiredProfileFields.gender && !gender) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes seleccionar el género',
+        path: ['gender']
+      });
+    }
+
     const passwordError = getDjangoLikePasswordError(data.password);
     if (passwordError) {
       ctx.addIssue({
@@ -54,7 +113,8 @@ const signUpSchema = z
     }
   });
 
-export type AuthSignUpFormValues = z.infer<typeof signUpSchema>;
+type SignUpSchema = ReturnType<typeof createSignUpSchema>;
+export type AuthSignUpFormValues = z.infer<SignUpSchema>;
 
 export type AuthSignUpFormProps = {
   defaultValues?: Partial<AuthSignUpFormValues>;
@@ -65,6 +125,7 @@ export type AuthSignUpFormProps = {
   formMaxHeight?: string | number;
   roleOptions?: Array<SelectOption<string> & { allowSignup?: boolean }>;
   defaultRole?: string;
+  requiredProfileFields?: Partial<JBAuthRequiredProfileFields>;
   onSubmit: (values: RegisterPayload) => unknown | Promise<unknown>;
 };
 
@@ -74,7 +135,7 @@ const defaultValues: AuthSignUpFormValues = {
   lastName2: '',
   email: '',
   birthday: '',
-  gender: DEFAULT_GENDER,
+  gender: '',
   role: '',
   password: '',
   passwordConfirm: '',
@@ -91,8 +152,20 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
     formMaxHeight = 'min(72dvh, 620px)',
     roleOptions,
     defaultRole,
+    requiredProfileFields,
     onSubmit
   } = props;
+  const resolvedRequiredProfileFields = useMemo(
+    () => ({
+      ...DEFAULT_REQUIRED_PROFILE_FIELDS,
+      ...(requiredProfileFields ?? {})
+    }),
+    [requiredProfileFields]
+  );
+  const signUpSchema = useMemo(
+    () => createSignUpSchema(resolvedRequiredProfileFields),
+    [resolvedRequiredProfileFields]
+  );
   const signupRoleOptions = (roleOptions ?? []).filter((roleOption) => roleOption.allowSignup !== false);
   const resolvedDefaultRole =
     valuesFromProps?.role ??
@@ -237,7 +310,7 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           autoFocus
           type="text"
           variant="outlined"
-        required
+          required={resolvedRequiredProfileFields.firstName}
         fullWidth
         disabled={disabled}
       />
@@ -249,7 +322,7 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           label="Primer apellido"
           type="text"
           variant="outlined"
-        required
+          required={resolvedRequiredProfileFields.lastName1}
         fullWidth
         disabled={disabled}
       />
@@ -261,6 +334,7 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           label="Segundo apellido"
           type="text"
           variant="outlined"
+          required={resolvedRequiredProfileFields.lastName2}
           fullWidth
           disabled={disabled}
         />
@@ -286,7 +360,8 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           storeAsDateString
           textFieldProps={{
             variant: 'outlined',
-            fullWidth: true
+            fullWidth: true,
+            required: resolvedRequiredProfileFields.birthday
           }}
           disabled={disabled}
         />
@@ -297,7 +372,9 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
           sx={{ mb: 3 }}
           label="Género"
           variant="outlined"
+          required={resolvedRequiredProfileFields.gender}
           fullWidth
+          emptyOptionLabel="Selecciona"
           options={GENDER_SELECT_OPTIONS}
           disabled={disabled}
         />

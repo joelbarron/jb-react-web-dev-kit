@@ -39,6 +39,15 @@ const EMPTY_PROFILE_FORM: ProfileFormState = {
   label: ''
 };
 
+const DEFAULT_REQUIRED_PROFILE_FIELDS = {
+  firstName: true,
+  lastName1: true,
+  lastName2: false,
+  birthday: true,
+  gender: true,
+  label: false
+};
+
 const normalizeProfileForm = (profile: Record<string, unknown>): ProfileFormState => ({
   firstName: pickString(profile, ['first_name', 'firstName']),
   lastName1: pickString(profile, ['last_name_1', 'lastName1']),
@@ -55,7 +64,7 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
     onUnsavedChangesChange,
     allowDefaultProfileEdit = true,
     allowProfilePictureChange = true,
-    requireBirthday = true
+    requiredProfileFields
   } = props;
 
   const [isLoading, setIsLoading] = useState(true);
@@ -75,6 +84,12 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
     }
     return URL.createObjectURL(selectedPicture);
   }, [selectedPicture]);
+  const resolvedRequiredFields = useMemo(() => {
+    return {
+      ...DEFAULT_REQUIRED_PROFILE_FIELDS,
+      ...(requiredProfileFields ?? {})
+    };
+  }, [requiredProfileFields]);
 
   const hasProfileChanges = useMemo(
     () =>
@@ -172,22 +187,36 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
   const validateProfileForm = useCallback((): boolean => {
     const nextErrors: ProfileFormErrors = {};
 
-    if (!formState.firstName.trim()) {
-      nextErrors.firstName = 'El nombre es requerido.';
+    if (resolvedRequiredFields.firstName && !formState.firstName.trim()) {
+      nextErrors.firstName = 'Los nombres son requeridos.';
     }
-    if (!formState.lastName1.trim()) {
-      nextErrors.lastName1 = 'El apellido paterno es requerido.';
+    if (resolvedRequiredFields.lastName1 && !formState.lastName1.trim()) {
+      nextErrors.lastName1 = 'El primer apellido es requerido.';
     }
-    if (requireBirthday && !formState.birthday.trim()) {
+    if (resolvedRequiredFields.lastName2 && !formState.lastName2.trim()) {
+      nextErrors.lastName2 = 'El segundo apellido es requerido.';
+    }
+    if (resolvedRequiredFields.birthday && !formState.birthday.trim()) {
       nextErrors.birthday = 'La fecha de nacimiento es requerida.';
     }
-    if (!formState.gender.trim()) {
+    if (resolvedRequiredFields.gender && !formState.gender.trim()) {
       nextErrors.gender = 'El género es requerido.';
+    }
+    if (resolvedRequiredFields.label && !formState.label.trim()) {
+      nextErrors.label = 'La etiqueta del perfil es requerida.';
     }
 
     setFieldErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
-  }, [formState.birthday, formState.firstName, formState.gender, formState.lastName1, requireBirthday]);
+  }, [
+    formState.birthday,
+    formState.firstName,
+    formState.gender,
+    formState.label,
+    formState.lastName1,
+    formState.lastName2,
+    resolvedRequiredFields
+  ]);
 
   const handleSave = useCallback(async () => {
     setErrorMessage(null);
@@ -411,8 +440,9 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
           gap: 2
         }}>
         <TextField
-          label="Nombre"
+          label="Nombre(s)"
           fullWidth
+          required={resolvedRequiredFields.firstName}
           value={formState.firstName}
           onChange={handleFieldChange('firstName')}
           error={Boolean(fieldErrors.firstName)}
@@ -420,8 +450,9 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
           disabled={!allowDefaultProfileEdit || !isEditMode}
         />
         <TextField
-          label="Apellido paterno"
+          label="Primer apellido"
           fullWidth
+          required={resolvedRequiredFields.lastName1}
           value={formState.lastName1}
           onChange={handleFieldChange('lastName1')}
           error={Boolean(fieldErrors.lastName1)}
@@ -429,16 +460,20 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
           disabled={!allowDefaultProfileEdit || !isEditMode}
         />
         <TextField
-          label="Apellido materno"
+          label="Segundo apellido"
           fullWidth
+          required={resolvedRequiredFields.lastName2}
           value={formState.lastName2}
           onChange={handleFieldChange('lastName2')}
+          error={Boolean(fieldErrors.lastName2)}
+          helperText={fieldErrors.lastName2}
           disabled={!allowDefaultProfileEdit || !isEditMode}
         />
         <TextField
           label="Fecha de nacimiento"
           type="date"
           fullWidth
+          required={resolvedRequiredFields.birthday}
           value={formState.birthday}
           onChange={handleFieldChange('birthday')}
           InputLabelProps={{ shrink: true }}
@@ -450,6 +485,7 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
           label="Género"
           fullWidth
           select
+          required={resolvedRequiredFields.gender}
           value={formState.gender}
           onChange={handleFieldChange('gender')}
           error={Boolean(fieldErrors.gender)}
@@ -465,11 +501,13 @@ export function AuthAccountProfileView(props: AuthAccountProfileViewProps) {
           ))}
         </TextField>
         <TextField
-          label="Nombre visible del perfil (opcional)"
+          label="Alias del perfil (opcional)"
           fullWidth
+          required={resolvedRequiredFields.label}
           value={formState.label}
           onChange={handleFieldChange('label')}
-          helperText="Se usa como nombre corto para identificar el perfil."
+          error={Boolean(fieldErrors.label)}
+          helperText={fieldErrors.label}
           disabled={!allowDefaultProfileEdit || !isEditMode}
         />
       </Box>
