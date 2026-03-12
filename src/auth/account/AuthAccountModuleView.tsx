@@ -312,6 +312,7 @@ export function AuthAccountModuleView(props: AuthAccountModuleViewProps) {
           variant="scrollable"
           scrollButtons="auto"
           allowScrollButtonsMobile
+          sx={{ maxWidth: '100%' }}
         >
           {visibleTabs.map((item) => (
             <Tab

@@ -36,6 +36,11 @@
       "import": "./dist/forms/index.js",
       "default": "./dist/forms/index.js"
     },
+    "./fuse-default-settings": {
+      "types": "./dist/fuse-default-settings/index.d.ts",
+      "import": "./dist/fuse-default-settings/index.js",
+      "default": "./dist/fuse-default-settings/index.js"
+    },
     "./grid": {
       "types": "./dist/grid/index.d.ts",
       "import": "./dist/grid/index.js",
@@ -97,12 +102,14 @@
     "@devexpress/dx-react-grid-material-ui": ">=4"
   },
   "dependencies": {
+    "qs": "^6.14.1",
     "react-easy-crop": "^5.5.3"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
     "@hookform/resolvers": "^5.2.2",
     "@types/lodash": "^4.17.20",
+    "@types/qs": "^6.14.0",
     "lodash": "^4.17.21",
     "react-router": "^7.9.5",
     "react-easy-crop": "^5.5.3",
