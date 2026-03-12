@@ -1,5 +1,11 @@
 # @joelbarron/react-web-dev-kit
 
+## 0.1.12
+
+### Patch Changes
+
+- bdcec69: fixes
+
 ## 0.1.11
 
 ### Patch Changes
