@@ -1,7 +1,7 @@
 import { TextFieldProps } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { ComponentProps } from 'react';
+import { ComponentProps, FocusEvent } from 'react';
 import { Controller, FieldValues, Path } from 'react-hook-form';
 
 import { JBFieldControlProps } from './types';
@@ -103,23 +103,8 @@ export function JBDatePickerField<
               const hasValidationError = Boolean(context?.validationError);
 
               if (storeAsDateString) {
-                if (value === null) {
-                  // Avoid clearing while user is typing partial sections (e.g. year).
-                  if (!hasValidationError) {
-                    field.onChange('');
-                  }
-                  return;
-                }
-
                 if (!hasValidationError && isValidDate(value)) {
                   field.onChange(formatDateValue(value));
-                }
-                return;
-              }
-
-              if (value === null) {
-                if (!hasValidationError) {
-                  field.onChange(null);
                 }
                 return;
               }
@@ -132,9 +117,28 @@ export function JBDatePickerField<
               textField: {
                 ...resolvedTextFieldProps,
                 size,
+                inputRef: field.ref,
                 sx: mergedTextFieldSx,
                 error: !!fieldState.error,
-                helperText: getJBFieldErrorMessage(fieldState.error) ?? resolvedTextFieldProps.helperText
+                helperText: getJBFieldErrorMessage(fieldState.error) ?? resolvedTextFieldProps.helperText,
+                onBlur: (event: FocusEvent<HTMLInputElement>) => {
+                  resolvedTextFieldProps.onBlur?.(event);
+                  field.onBlur();
+
+                  const rawInputValue =
+                    typeof event?.target?.value === 'string' ? event.target.value : '';
+
+                  if (rawInputValue.trim()) {
+                    return;
+                  }
+
+                  if (storeAsDateString) {
+                    field.onChange('');
+                    return;
+                  }
+
+                  field.onChange(null);
+                }
               }
             }}
           />
