@@ -48,6 +48,12 @@ export type AuthAccountContactViewProps = AuthAccountCommonViewProps & {
   allowAccountEdit?: boolean;
   onHeaderActionsChange?: AuthAccountHeaderActionsChange;
   onUnsavedChangesChange?: AuthAccountUnsavedChangesChange;
+  forceEditMode?: boolean;
+  lockPrefilledFields?: boolean;
+  hideInternalActions?: boolean;
+  requireEmailAndPhone?: boolean;
+  onSubmitHandlerChange?: (handler: (() => Promise<boolean>) | null) => void;
+  onContactCompletenessChange?: (isComplete: boolean) => void;
 };
 
 export type AuthAccountSecurityViewProps = AuthAccountCommonViewProps & {
