@@ -30,7 +30,7 @@ export function AuthAccountConfirmationForm(props: AuthAccountConfirmationFormPr
     defaultEmail,
     onGoToSignIn,
     resendCooldownSeconds = 30,
-    signInRedirectSeconds = 5,
+    signInRedirectSeconds = 25,
     autoSubmit = true,
     onSubmit,
     onResend

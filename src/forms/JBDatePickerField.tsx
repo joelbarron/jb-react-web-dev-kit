@@ -57,6 +57,9 @@ const formatDateValue = (value: unknown): string => {
   return `${year}-${month}-${day}`;
 };
 
+const isValidDate = (value: unknown): value is Date =>
+  value instanceof Date && !Number.isNaN(value.getTime());
+
 export function JBDatePickerField<
   TFieldValues extends FieldValues,
   TName extends Path<TFieldValues>
@@ -70,7 +73,9 @@ export function JBDatePickerField<
     storeAsDateString = false,
     ...datePickerProps
   } = props;
+  const { format: dateFormat, ...resolvedDatePickerProps } = datePickerProps;
   const { size = 'medium', ...resolvedTextFieldProps } = textFieldProps ?? {};
+  const resolvedDateFormat = dateFormat ?? 'dd/MM/yyyy';
   const asSxArray = (value: unknown) => (Array.isArray(value) ? value : [value]);
   const mergedTextFieldSx = [
     {
@@ -90,10 +95,39 @@ export function JBDatePickerField<
       render={({ field, fieldState }) => (
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DatePicker
-            {...datePickerProps}
+            {...resolvedDatePickerProps}
             sx={datePickerSx}
+            format={resolvedDateFormat}
             value={storeAsDateString ? asDateValue(field.value) : field.value ?? null}
-            onChange={(value) => field.onChange(storeAsDateString ? formatDateValue(value) : value)}
+            onChange={(value, context) => {
+              const hasValidationError = Boolean(context?.validationError);
+
+              if (storeAsDateString) {
+                if (value === null) {
+                  // Avoid clearing while user is typing partial sections (e.g. year).
+                  if (!hasValidationError) {
+                    field.onChange('');
+                  }
+                  return;
+                }
+
+                if (!hasValidationError && isValidDate(value)) {
+                  field.onChange(formatDateValue(value));
+                }
+                return;
+              }
+
+              if (value === null) {
+                if (!hasValidationError) {
+                  field.onChange(null);
+                }
+                return;
+              }
+
+              if (!hasValidationError && isValidDate(value)) {
+                field.onChange(value);
+              }
+            }}
             slotProps={{
               textField: {
                 ...resolvedTextFieldProps,
