@@ -37,7 +37,8 @@ export const readFileAsDataUrl = (file: File): Promise<string> =>
   });
 
 const blobToDataUrl = async (blob: Blob): Promise<string> => {
-  return readFileAsDataUrl(new File([blob], 'image'));
+  const normalizedType = String(blob.type || '').trim() || 'image/jpeg';
+  return readFileAsDataUrl(new File([blob], 'image', { type: normalizedType }));
 };
 
 const loadImageElement = (src: string): Promise<HTMLImageElement> =>
@@ -193,4 +194,3 @@ export const processCroppedImage = async (params: {
     originalFile: params.file
   };
 };
-
