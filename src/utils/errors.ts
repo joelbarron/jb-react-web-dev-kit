@@ -73,3 +73,4 @@ export const getApiErrorMessage = (error: unknown, fallback: string): string => 
   return raw.message?.trim() || fallback;
 };
 
+export const getErrorMessage = getApiErrorMessage;
