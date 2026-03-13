@@ -1,5 +1,11 @@
 # @joelbarron/react-web-dev-kit
 
+## 0.1.13
+
+### Patch Changes
+
+- 01d9637: fixes
+
 ## 0.1.12
 
 ### Patch Changes
