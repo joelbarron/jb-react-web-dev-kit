@@ -67,7 +67,7 @@ export function AuthPasswordResetConfirmForm(props: AuthPasswordResetConfirmForm
     loading = false,
     submitLabel = 'Restablecer contraseña',
     successMessage = 'Contraseña restablecida correctamente. Ya puedes iniciar sesión.',
-    successRedirectSeconds = 5,
+    successRedirectSeconds = 25,
     onGoToSignIn,
     onSubmit
   } = props;
