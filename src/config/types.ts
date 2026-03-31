@@ -57,6 +57,13 @@ export type JBAuthSocialProviderConfig = {
 
 export type JBAuthSocialConfig = Record<JBSocialProviderName, JBAuthSocialProviderConfig>;
 
+export type JBAuthAccountProfileMirrorConfig = {
+  enabled: boolean;
+  rolePairs: Array<[string, string]>;
+  syncFields: string[];
+  autocureOnAuthEvents: boolean;
+};
+
 export type JBAuthAccountConfig = {
   allowProfileManagement: boolean;
   enableContactVerification: boolean;
@@ -68,6 +75,7 @@ export type JBAuthAccountConfig = {
   profileCompletionPath?: string;
   requiredProfileFields: JBAuthRequiredProfileFields;
   subscriptionUrl?: string;
+  profileMirror: JBAuthAccountProfileMirrorConfig;
 };
 
 export type JBAppConfig = {

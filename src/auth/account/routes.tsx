@@ -107,6 +107,7 @@ export function createAuthenticatedAccountRoutes<
       <AuthAccountProfilesView
         authClient={authClient}
         allowProfileManagement={accountConfig?.allowProfileManagement}
+        profileMirrorEnabled={Boolean(accountConfig?.profileMirror?.enabled)}
         profileRoles={profileRoles}
         requiredProfileFields={accountConfig?.requiredProfileFields}
         profilePictureConfig={profilePictureConfig}

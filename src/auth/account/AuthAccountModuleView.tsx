@@ -98,6 +98,7 @@ export function AuthAccountModuleView(props: AuthAccountModuleViewProps) {
   const profilePictureConfig = useMemo(() => getAuthProfilePictureConfig(jbWebConfig), [jbWebConfig]);
   const profileRoles = useMemo(() => getAuthProfileRoles(jbWebConfig), [jbWebConfig]);
   const socialConfig = useMemo(() => getAuthSocialConfig(jbWebConfig), [jbWebConfig]);
+  const profileMirrorEnabled = Boolean(accountConfig.profileMirror?.enabled);
   const hasEnabledSocialProviders = useMemo(
     () => Object.values(socialConfig).some((providerConfig) => Boolean(providerConfig?.enabled)),
     [socialConfig]
@@ -106,7 +107,7 @@ export function AuthAccountModuleView(props: AuthAccountModuleViewProps) {
   const visibleTabs = useMemo(
     () =>
       tabs.filter((item) => {
-        if (item.value === 'profiles' && !accountConfig.allowProfileManagement) {
+        if (item.value === 'profiles' && (!accountConfig.allowProfileManagement || profileMirrorEnabled)) {
           return false;
         }
         if (item.value === 'subscription' && !accountConfig.subscriptionUrl) {
@@ -117,7 +118,7 @@ export function AuthAccountModuleView(props: AuthAccountModuleViewProps) {
         }
         return true;
       }),
-    [accountConfig.allowProfileManagement, accountConfig.subscriptionUrl, hasEnabledSocialProviders]
+    [accountConfig.allowProfileManagement, accountConfig.subscriptionUrl, hasEnabledSocialProviders, profileMirrorEnabled]
   );
 
   const rawTab = params[tabParamName];
@@ -393,6 +394,7 @@ export function AuthAccountModuleView(props: AuthAccountModuleViewProps) {
         <AuthAccountProfilesView
           authClient={authClient}
           allowProfileManagement={accountConfig.allowProfileManagement}
+          profileMirrorEnabled={profileMirrorEnabled}
           profileRoles={profileRoles}
           requiredProfileFields={accountConfig.requiredProfileFields}
           profilePictureConfig={profilePictureConfig}

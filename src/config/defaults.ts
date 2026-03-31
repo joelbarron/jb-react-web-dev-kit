@@ -57,7 +57,21 @@ export const defaultJBAppConfig: JBAppConfig = {
         gender: true,
         label: false
       },
-      subscriptionUrl: undefined
+      subscriptionUrl: undefined,
+      profileMirror: {
+        enabled: false,
+        rolePairs: [['HOST', 'GUEST']],
+        syncFields: [
+          'first_name',
+          'last_name_1',
+          'last_name_2',
+          'birthday',
+          'gender',
+          'picture',
+          'label'
+        ],
+        autocureOnAuthEvents: true
+      }
     },
     social: {
       google: {
