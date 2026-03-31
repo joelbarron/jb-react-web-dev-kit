@@ -1,5 +1,11 @@
 # @joelbarron/react-web-dev-kit
 
+## 0.1.15
+
+### Patch Changes
+
+- e8bff3e: new features
+
 ## 0.1.14
 
 ### Patch Changes
