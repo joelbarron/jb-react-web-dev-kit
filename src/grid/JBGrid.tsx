@@ -68,6 +68,7 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
     stickyPagination = true,
     height = '100%',
     stickyHeader = true,
+    lockContentWrapperOverflow = true,
     infiniteScroll = false,
     hasMore = false,
     isLoadingMore = false,
@@ -105,6 +106,41 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
         .map((grouping) => grouping?.columnName)
         .filter((name): name is string => typeof name === 'string' && name.length > 0),
     [defaults.grouping]
+  );
+  const columnsByName = useMemo(
+    () => new Map(gridConfig.columns.map((column) => [column.name, column] as const)),
+    [gridConfig.columns]
+  );
+  const renderDataCell = useMemo(
+    () =>
+      function RenderDataCell(props: any) {
+        const { column, value, children, row, tableRow, tableColumn, ...restProps } = props;
+        const gridColumn = columnsByName.get(column?.name);
+        const renderedValue =
+          typeof gridColumn?.renderCell === 'function'
+            ? gridColumn.renderCell({
+                value,
+                row,
+                column: gridColumn,
+                tableRow,
+                tableColumn
+              })
+            : undefined;
+
+        return (
+          <Table.Cell
+            {...restProps}
+            column={column}
+            value={value}
+            row={row}
+            tableRow={tableRow}
+            tableColumn={tableColumn}
+          >
+            {renderedValue !== undefined ? renderedValue : children ?? value}
+          </Table.Cell>
+        );
+      },
+    [columnsByName]
   );
 
   const expandedGroupsFromRows = useMemo(() => {
@@ -312,6 +348,7 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
   }, [hasMore, infiniteScroll, isLoadingMore, loadMoreThreshold, onLoadMore, rows.length, virtualScrolling]);
 
   useEffect(() => {
+    if (!lockContentWrapperOverflow) return;
     if (!rootRef.current) return;
 
     const contentWrapper = rootRef.current.closest('.FusePageCarded-contentWrapper') as HTMLElement | null;
@@ -380,7 +417,7 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
       delete contentWrapper.dataset.jbGridPrevContentHeight;
       delete contentWrapper.dataset.jbGridPrevContentMinHeight;
     };
-  }, []);
+  }, [lockContentWrapperOverflow]);
 
   return (
     <Box
@@ -549,14 +586,18 @@ export function JBGrid<TData extends Record<string, unknown>>(props: JBGridProps
           ) : null}
           {gridConfig.dateColumns?.length ? <JBDateTypeProvider for={gridConfig.dateColumns} /> : null}
 
-            {virtualScrolling ? (
-              <VirtualTable
+          {virtualScrolling ? (
+            <VirtualTable
+              cellComponent={renderDataCell}
+              columnExtensions={gridConfig.tableColumnExtensions as never}
+              estimatedRowHeight={defaults.estimatedRowHeight}
+              height={resolvedVirtualTableHeight}
+            />
+          ) : (
+              <Table
+                cellComponent={renderDataCell}
                 columnExtensions={gridConfig.tableColumnExtensions as never}
-                estimatedRowHeight={defaults.estimatedRowHeight}
-                height={resolvedVirtualTableHeight}
               />
-            ) : (
-              <Table columnExtensions={gridConfig.tableColumnExtensions as never} />
             )}
 
           {defaults.allowColumnReordering ? (

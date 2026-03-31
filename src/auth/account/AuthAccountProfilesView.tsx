@@ -202,12 +202,14 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
   const {
     authClient,
     allowProfileManagement = false,
+    profileMirrorEnabled = false,
     profileRoles = [],
     requiredProfileFields,
     profilePictureConfig,
     onHeaderActionsChange,
     onUnsavedChangesChange
   } = props;
+  const isProfileManagementEnabled = allowProfileManagement && !profileMirrorEnabled;
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isSwitching, setIsSwitching] = useState<number | null>(null);
@@ -370,23 +372,31 @@ export function AuthAccountProfilesView(props: AuthAccountProfilesViewProps) {
   }, [selectedProfile]);
 
   useEffect(() => {
-    if (!allowProfileManagement && onHeaderActionsChange) {
+    if (!isProfileManagementEnabled && onHeaderActionsChange) {
       onHeaderActionsChange(null);
     }
-  }, [allowProfileManagement, onHeaderActionsChange]);
+  }, [isProfileManagementEnabled, onHeaderActionsChange]);
 
   useEffect(() => {
     if (!onUnsavedChangesChange) {
       return undefined;
     }
-    onUnsavedChangesChange(Boolean(allowProfileManagement && hasUnsavedChanges));
+    onUnsavedChangesChange(Boolean(isProfileManagementEnabled && hasUnsavedChanges));
     return () => onUnsavedChangesChange(false);
-  }, [allowProfileManagement, hasUnsavedChanges, onUnsavedChangesChange]);
+  }, [hasUnsavedChanges, isProfileManagementEnabled, onUnsavedChangesChange]);
 
   if (!allowProfileManagement) {
     return (
       <Alert severity="info">
         La gestión de perfiles múltiples está deshabilitada para esta implementación.
+      </Alert>
+    );
+  }
+
+  if (profileMirrorEnabled) {
+    return (
+      <Alert severity="info">
+        La gestión de perfiles adicionales no está disponible porque la sincronización de perfiles está habilitada.
       </Alert>
     );
   }

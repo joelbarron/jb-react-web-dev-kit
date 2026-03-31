@@ -64,6 +64,7 @@ export type AuthAccountSecurityViewProps = AuthAccountCommonViewProps & {
 
 export type AuthAccountProfilesViewProps = AuthAccountCommonViewProps & {
   allowProfileManagement?: boolean;
+  profileMirrorEnabled?: boolean;
   profileRoles?: JBAuthProfileRoleOption[];
   requiredProfileFields?: Partial<JBAuthRequiredProfileFields>;
   profilePictureConfig?: Partial<JBAuthProfilePictureConfig>;

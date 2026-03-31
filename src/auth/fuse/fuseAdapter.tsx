@@ -79,6 +79,23 @@ const isTokenValid = (token: string | null) => {
 const normalizeUserShape = (userInput: unknown): JsonRecord => {
   const user = asRecord(userInput);
   const userData = asRecord(user.data);
+  const rawRole = user.role ?? user.roles ?? userData.role ?? userData.roles ?? null;
+  const normalizeRole = (value: unknown): string[] | string | null => {
+    if (Array.isArray(value)) {
+      const roles = value
+        .map((item) => String(item ?? '').trim().toLowerCase())
+        .filter(Boolean);
+      return roles.length ? Array.from(new Set(roles)) : null;
+    }
+
+    if (typeof value === 'string') {
+      const role = value.trim().toLowerCase();
+      return role ? role : null;
+    }
+
+    return null;
+  };
+
   const displayName =
     (user.displayName as string) ||
     (userData.displayName as string) ||
@@ -87,10 +104,7 @@ const normalizeUserShape = (userInput: unknown): JsonRecord => {
 
   return {
     id: (user.id || user.user_id || user.pk || userData.id || userData.user_id || userData.pk || '0') as string,
-    role: (user.role || user.roles || userData.role || userData.roles || ['admin']) as
-      | string[]
-      | string
-      | null,
+    role: normalizeRole(rawRole),
     displayName,
     photoURL: (user.photoURL || user.photoUrl || userData.photoURL || userData.photoUrl || '') as string,
     email: (user.email || userData.email || '') as string,

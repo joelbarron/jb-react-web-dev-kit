@@ -31,6 +31,13 @@ export type JBGridGrouping = {
 export type JBGridColumn = {
   name: string;
   title: string;
+  renderCell?: (params: {
+    value: unknown;
+    row: Record<string, unknown>;
+    column: JBGridColumn;
+    tableColumn?: unknown;
+    tableRow?: unknown;
+  }) => ReactNode;
   [key: string]: unknown;
 };
 
@@ -104,6 +111,7 @@ export type JBGridProps<TData extends Record<string, unknown>> = {
   stickyPagination?: boolean;
   height?: number | string;
   stickyHeader?: boolean;
+  lockContentWrapperOverflow?: boolean;
   infiniteScroll?: boolean;
   hasMore?: boolean;
   isLoadingMore?: boolean;

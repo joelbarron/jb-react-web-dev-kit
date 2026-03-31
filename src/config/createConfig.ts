@@ -306,10 +306,16 @@ export const getAuthRequiredProfileFields = (
 export const getAuthAccountConfig = (config: JBAppConfig): JBAuthAccountConfig => {
   const accountConfig = config.auth?.account ?? defaultJBAppConfig.auth.account;
   const requiredProfileFields = getAuthRequiredProfileFields(accountConfig);
+  const defaultProfileMirror = defaultJBAppConfig.auth.account.profileMirror;
+  const customProfileMirror = accountConfig.profileMirror ?? {};
   return {
     ...defaultJBAppConfig.auth.account,
     ...accountConfig,
-    requiredProfileFields
+    requiredProfileFields,
+    profileMirror: {
+      ...defaultProfileMirror,
+      ...(customProfileMirror ?? {})
+    }
   };
 };
 

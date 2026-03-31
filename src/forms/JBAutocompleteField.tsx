@@ -15,6 +15,7 @@ export type JBAutocompleteFieldProps<
     options: SelectOption[];
     loading?: boolean;
     disableClearable?: boolean;
+    multiple?: boolean;
     noOptionsText?: string;
     onSearchTextChange?: (value: string) => void;
   };
@@ -30,6 +31,7 @@ export function JBAutocompleteField<
     options,
     loading = false,
     disableClearable = false,
+    multiple = false,
     noOptionsText = 'Sin opciones',
     onSearchTextChange,
     size = 'medium',
@@ -42,22 +44,38 @@ export function JBAutocompleteField<
       name={name}
       rules={rules}
       render={({ field, fieldState }) => {
-        const selectedOption =
-          options.find((option) => String(option.value) === String(field.value ?? '')) ?? null;
+        const selectedOption = multiple
+          ? options.filter((option) =>
+              Array.isArray(field.value)
+                ? field.value.some((item: unknown) => String(item) === String(option.value))
+                : false
+            )
+          : options.find((option) => String(option.value) === String(field.value ?? '')) ?? null;
 
         return (
           <Autocomplete
+            multiple={multiple}
             options={options}
-            value={selectedOption}
+            value={selectedOption as SelectOption | SelectOption[] | null}
             disabled={textFieldProps.disabled}
             loading={loading}
             disableClearable={disableClearable}
             noOptionsText={noOptionsText}
+            disableCloseOnSelect={multiple}
             getOptionDisabled={(option) => !!option.disabled}
             getOptionLabel={(option) => option.label ?? ''}
             isOptionEqualToValue={(option, value) => String(option.value) === String(value.value)}
             onChange={(_, option) => {
-              field.onChange(option ? option.value : '');
+              if (multiple) {
+                const selectedValues = Array.isArray(option)
+                  ? (option as SelectOption[]).map((selectedOptionItem) => selectedOptionItem.value)
+                  : [];
+                field.onChange(selectedValues);
+                return;
+              }
+
+              const selectedValue = !Array.isArray(option) ? (option as SelectOption | null) : null;
+              field.onChange(selectedValue ? selectedValue.value : '');
             }}
             onInputChange={(_, value, reason) => {
               if (reason === 'input') {
