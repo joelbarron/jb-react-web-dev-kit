@@ -26,12 +26,17 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # Pin to a Node 22 minor with a working bundled npm.
+          # 22.22.x ships a broken npm 10.x (missing promise-retry),
+          # which makes `npm install -g npm@...` fail before we can upgrade.
+          node-version: 22.20.0
           cache: npm
 
       - name: Ensure npm supports trusted publishing
         run: |
-          npm install -g npm@^11.5.1
+          # --force overwrites the bundled npm even if its dep tree is broken,
+          # so this step is resilient if setup-node ever serves a bad minor again.
+          npm install -g npm@^11.5.1 --force
           npm --version
 
       - name: Install dependencies
