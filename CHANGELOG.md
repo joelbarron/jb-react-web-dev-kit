@@ -1,5 +1,11 @@
 # @joelbarron/react-web-dev-kit
 
+## 0.1.17
+
+### Patch Changes
+
+- f14fe3f: fixes
+
 ## 0.1.16
 
 ### Patch Changes
