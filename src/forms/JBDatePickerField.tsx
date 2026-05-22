@@ -105,12 +105,18 @@ export function JBDatePickerField<
               if (storeAsDateString) {
                 if (!hasValidationError && isValidDate(value)) {
                   field.onChange(formatDateValue(value));
+                } else if (!hasValidationError && value === null) {
+                  // El campo fue vaciado — limpiar el valor para que
+                  // el picker no revierta al valor anterior en el re-render.
+                  field.onChange('');
                 }
                 return;
               }
 
               if (!hasValidationError && isValidDate(value)) {
                 field.onChange(value);
+              } else if (!hasValidationError && value === null) {
+                field.onChange(null);
               }
             }}
             slotProps={{
@@ -124,20 +130,12 @@ export function JBDatePickerField<
                 onBlur: (event: FocusEvent<HTMLInputElement>) => {
                   resolvedTextFieldProps.onBlur?.(event);
                   field.onBlur();
-
-                  const rawInputValue =
-                    typeof event?.target?.value === 'string' ? event.target.value : '';
-
-                  if (rawInputValue.trim()) {
-                    return;
-                  }
-
-                  if (storeAsDateString) {
-                    field.onChange('');
-                    return;
-                  }
-
-                  field.onChange(null);
+                  // No limpiamos aquí basándonos en event.target.value.
+                  // En MUI DatePicker v6+ el input subyacente es section-based
+                  // y su .value puede ser "" aunque haya una fecha visible,
+                  // lo que causaría borrar un valor válido al perder el foco.
+                  // El vaciado real (usuario borra el campo) ya se maneja en
+                  // onChange cuando MUI emite value=null sin validationError.
                 }
               }
             }}

@@ -1,4 +1,4 @@
-import { Autocomplete, CircularProgress, TextField, TextFieldProps } from '@mui/material';
+import { Autocomplete, Box, CircularProgress, TextField, TextFieldProps } from '@mui/material';
 import { Controller, FieldValues, Path } from 'react-hook-form';
 
 import { JBFieldControlProps, SelectOption } from './types';
@@ -65,6 +65,24 @@ export function JBAutocompleteField<
             getOptionDisabled={(option) => !!option.disabled}
             getOptionLabel={(option) => option.label ?? ''}
             isOptionEqualToValue={(option, value) => String(option.value) === String(value.value)}
+            renderOption={(optionProps, option) => {
+              const { key, ...rest } = optionProps as { key: React.Key } & React.HTMLAttributes<HTMLLIElement>;
+              return (
+                <Box
+                  component="li"
+                  key={key}
+                  {...rest}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                >
+                  {option.startAdornment ? (
+                    <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                      {option.startAdornment}
+                    </Box>
+                  ) : null}
+                  <span>{option.label}</span>
+                </Box>
+              );
+            }}
             onChange={(_, option) => {
               if (multiple) {
                 const selectedValues = Array.isArray(option)
@@ -93,6 +111,14 @@ export function JBAutocompleteField<
                 inputRef={field.ref}
                 InputProps={{
                   ...params.InputProps,
+                  startAdornment:
+                    !multiple && selectedOption && (selectedOption as SelectOption).startAdornment ? (
+                      <Box sx={{ display: 'inline-flex', alignItems: 'center', ml: 0.5, mr: -0.5 }}>
+                        {(selectedOption as SelectOption).startAdornment}
+                      </Box>
+                    ) : (
+                      params.InputProps.startAdornment
+                    ),
                   endAdornment: (
                     <>
                       {loading ? (

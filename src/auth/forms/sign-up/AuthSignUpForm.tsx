@@ -8,14 +8,14 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import _ from 'lodash';
 import { useEffect, useMemo, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
 import { JBAuthRequiredProfileFields } from '../../../config';
 import { JBCheckboxField, JBDatePickerField, JBSelectField, JBTextField, SelectOption } from '../../../forms';
 import { GENDERS, GENDER_SELECT_OPTIONS } from '../../constants';
 import { RegisterPayload } from '../../types';
-import { AuthPrimaryButton } from '../../ui';
+import { AuthPrimaryButton, RoleOptionCards } from '../../ui';
 import { getDjangoLikePasswordError, isPasswordTooSimilar } from '../password/passwordValidation';
 import { parseAuthError } from '../errorParser';
 
@@ -123,7 +123,7 @@ export type AuthSignUpFormProps = {
   submitLabel?: string;
   fieldsScrollable?: boolean;
   formMaxHeight?: string | number;
-  roleOptions?: Array<SelectOption<string> & { allowSignup?: boolean }>;
+  roleOptions?: Array<SelectOption<string> & { allowSignup?: boolean; description?: string }>;
   defaultRole?: string;
   requiredProfileFields?: Partial<JBAuthRequiredProfileFields>;
   onSubmit: (values: RegisterPayload) => unknown | Promise<unknown>;
@@ -380,17 +380,19 @@ export function AuthSignUpForm(props: AuthSignUpFormProps) {
         />
 
         {signupRoleOptions.length > 0 ? (
-          <JBSelectField
-            control={control}
-            name="role"
-            sx={{ mb: 3 }}
-            label="Rol de perfil"
-            variant="outlined"
-            fullWidth
-            options={signupRoleOptions}
-            required
-            disabled={disabled}
-          />
+          <Box sx={{ mb: 3, opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
+            <Controller
+              control={control}
+              name='role'
+              render={({ field }) => (
+                <RoleOptionCards
+                  options={signupRoleOptions}
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+          </Box>
         ) : null}
 
         <JBTextField
