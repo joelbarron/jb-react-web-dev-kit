@@ -535,7 +535,7 @@ function FuseAccountConfirmationPageForm(props: AccountConfirmationFormProps) {
   );
 }
 
-type RoleOption = { value: string; label: string };
+type RoleOption = { value: string; label: string; description?: string };
 
 function useRoleSelectionDialog(options: RoleOption[], defaultRole?: string) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -623,6 +623,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
       .map((roleOption) => ({
         value: roleOption.value,
         label: roleOption.label,
+        description: roleOption.description,
       }));
     const { requestRoleSelection, dialog, hasRoleOptions } = useRoleSelectionDialog(
       signupRoleOptions,
@@ -813,6 +814,7 @@ export function createFuseAuthViews(options: CreateFuseAuthViewsOptions) {
       .map((roleOption) => ({
         value: roleOption.value,
         label: roleOption.label,
+        description: roleOption.description,
       }));
     const { requestRoleSelection, dialog, hasRoleOptions } = useRoleSelectionDialog(
       signupRoleOptions,

@@ -5,4 +5,5 @@ export * from './AuthPrimaryButton';
 export * from './AuthSecondaryButton';
 export * from './AuthSocialProviderButton';
 export * from './AuthRoleSelectionDialog';
+export * from './RoleOptionCards';
 export * from './AuthPageTitle';

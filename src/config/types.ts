@@ -7,6 +7,8 @@ export type JBApiHostConfig = Record<JBAppStage, string>;
 export type JBAuthProfileRoleOption = {
   value: string;
   label: string;
+  /** Descripción corta que se muestra debajo del label en el selector de rol. */
+  description?: string;
   allowSignup?: boolean;
 };
 

@@ -10,3 +10,4 @@ export * from './JBSwitchField';
 export * from './JBRadioGroupField';
 export * from './JBDatePickerField';
 export * from './JBTimePickerField';
+export * from './JBPhoneField';

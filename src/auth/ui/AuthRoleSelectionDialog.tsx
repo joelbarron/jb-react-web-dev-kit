@@ -4,13 +4,14 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import FormHelperText from '@mui/material/FormHelperText';
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { JBRadioGroupField, SelectOption } from '../../forms';
 import { AuthPrimaryButton } from './AuthPrimaryButton';
 import { AuthSecondaryButton } from './AuthSecondaryButton';
+import { RoleCardOption, RoleOptionCards } from './RoleOptionCards';
 
 type AuthRoleSelectionDialogFormValues = {
   role: string;
@@ -18,7 +19,7 @@ type AuthRoleSelectionDialogFormValues = {
 
 export type AuthRoleSelectionDialogProps = {
   open: boolean;
-  options: SelectOption<string>[];
+  options: RoleCardOption[];
   initialRole?: string;
   title?: string;
   description?: string;
@@ -55,7 +56,7 @@ export function AuthRoleSelectionDialog(props: AuthRoleSelectionDialogProps) {
     }
   });
 
-  const { isSubmitting } = formState;
+  const { isSubmitting, errors } = formState;
 
   useEffect(() => {
     if (!open) {
@@ -71,16 +72,28 @@ export function AuthRoleSelectionDialog(props: AuthRoleSelectionDialogProps) {
       open={open}
       onClose={onCancel}
       fullWidth
-      maxWidth='xs'>
+      maxWidth='sm'>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
-        <DialogContentText sx={{ mb: 2 }}>{description}</DialogContentText>
-        <JBRadioGroupField
+        {description ? (
+          <DialogContentText sx={{ mb: 2.5 }}>{description}</DialogContentText>
+        ) : null}
+        <Controller
           control={control}
           name='role'
-          options={options}
-          formControlProps={{ fullWidth: true }}
+          render={({ field }) => (
+            <RoleOptionCards
+              options={options}
+              value={field.value}
+              onChange={field.onChange}
+            />
+          )}
         />
+        {errors.role ? (
+          <FormHelperText error sx={{ mt: 1, mx: 0 }}>
+            {errors.role.message}
+          </FormHelperText>
+        ) : null}
       </DialogContent>
       <DialogActions>
         <AuthSecondaryButton
